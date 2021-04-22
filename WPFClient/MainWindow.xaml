@@ -5,8 +5,38 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFClient"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="CorEstafette -- Client WPF" Height="450" Width="600">
+    <Grid Background="Cornsilk">
+        <StackPanel Grid.ColumnSpan="3">
+            <GroupBox Header="Content: " Margin="5,5,5,0">
+                <StackPanel Margin="5,5,5,5">
+                    <TextBox x:Name="ContentText" Text="Topic to Bind Should be here" Margin="5,5,5,0"/>
+                    <Button Content="Publish Message" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Subscribe to:" Margin="5,5,5,0">
+                <StackPanel Margin="5,5,5,5">
+                    <TextBox x:Name="SubscribeText" Text="To Bind" Margin="5,5,5,0" />
+                    <Button Content="Subscribe" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Unsubscribing" Margin="5,5,5,0">
+                <StackPanel Margin="5,5,5,5">
+                    <TextBox x:Name="UnsubscribeText" Text="To Bind" Margin="5,5,5,0" />
+                    <Button Content="Unsubscribe" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Messages :" Margin="5,5,5,0">
+                <StackPanel Margin="5,5,5,3">
+                    <TextBox x:Name="Messages" Text="To Bind" Margin="5,5,5,0" />
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Log Messages :" Margin="5,5,5,5">
+                <StackPanel Margin="5,5,5,5">
+                    <TextBox x:Name="LogMessages" Text="To Bind" Margin="5,5,5,0" />
+                </StackPanel>
+            </GroupBox>
+         </StackPanel>
 
     </Grid>
 </Window>
