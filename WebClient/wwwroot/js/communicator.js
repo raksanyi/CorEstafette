@@ -9,11 +9,32 @@
         this.connection.start();
     }
 
-    publish(user, message) {
-        console.log("Client called publish method");
-        this.connection.invoke("SendMessage", user, message);
+    //TODO:
+    //1. when subscribe and subscribe, communicator need to wait for answer
+    //2. convert message to json
+    //3. subscribe to topic with callback, cache topic-callback pairs
 
+    sendMessage(user, message) {
+        console.log("Client called send message to all method");
+        this.connection.invoke("SendMessage", user, message);
     }
 
+    publish(user, topic, message) {
+        console.log("Client called publish method");
+        this.connection.invoke("PublishMessage", user, topic, message);
+    }
+
+    subscribe(user, topic) {
+        console.log("Client called subscribe method");
+
+        this.connection.invoke("SubscribeTopic", user, topic);
+        
+    }
+
+    unsubscribe(user, topic) {
+        console.log("Client called unsubscribe method");
+        this.connection.invoke("UnsubscribeTopic", user, topic);
+        
+    }
 
 }
