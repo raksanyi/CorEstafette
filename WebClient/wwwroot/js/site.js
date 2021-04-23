@@ -1,6 +1,7 @@
 ﻿"use strict";
 
 import Communicator from "./communicator.js";
+import Message from "./Message.js";
 
 let comm = new Communicator();
 
