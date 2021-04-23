@@ -12,7 +12,7 @@ namespace WPFClient
         
         public Communicator( )
         {
-            subscriptions = new List<string>();
+             subscriptions = new List<string>();
         }
 
         public bool Subscribe(String topic)
@@ -39,7 +39,8 @@ namespace WPFClient
 
         public bool Publish(String topic, String message )
         {
-            return true;
+            return message == "" ? false : true;
+            
         }
 
         private int FindSubscriptionIndex(String topic)
