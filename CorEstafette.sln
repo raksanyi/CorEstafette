@@ -5,8 +5,8 @@ VisualStudioVersion = 16.0.809.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CorEstafette", "CorEstafette\CorEstafette.csproj", "{C6D16B34-DF95-43A0-8F03-F66124E041C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFClient", "WPFClient\WPFClient.csproj", "{4D36CE30-1474-4201-B9CF-4F7796F95544}"
-EndProject
+#Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFClient", "WPFClient\WPFClient.csproj", "{4D36CE30-1474-4201-B9CF-4F7796F95544}"
+#EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebClient", "WebClient\WebClient.csproj", "{1B1EEC10-7DF8-484C-9571-F294592DD05B}"
 EndProject
 Global
