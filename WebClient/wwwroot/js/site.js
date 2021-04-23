@@ -4,8 +4,8 @@ document.getElementById("subscribeButton").addEventListener("click", function (e
     var user = document.getElementById("userInput").value;
     var topic = document.getElementById("topicInput").value;
 
-    let communicatorInstance = new communicator(null);
-    communicatorInstance.subscribe();
+    //let communicatorInstance = new communicator(null);
+    //communicatorInstance.subscribe();
 
    // subscribeTest();
 
@@ -17,7 +17,7 @@ document.getElementById("publishButton").addEventListener("click", function (eve
     var topic = document.getElementById("topicInput").value;
     var message = document.getElementById("messageInput").value;
 
-    publishTest();
+    //publishTest();
 
 });
 
@@ -25,6 +25,6 @@ document.getElementById("unsubscribeButton").addEventListener("click", function 
     var user = document.getElementById("userInput").value;
     var topic = document.getElementById("topicInput").value;
 
-    unsubscribeTest();
+    //unsubscribeTest();
 
 });

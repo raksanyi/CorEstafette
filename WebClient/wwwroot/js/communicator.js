@@ -1,27 +1,19 @@
-﻿
-function communicator() {
+﻿export default class Communicator {
 
-    this.publish = function (topic, message) {
+    constructor() {
+        this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
+        this.connection.start();
+    }
+
+    startConnection() {
+        this.connection.start();
+    }
+
+    publish(user, message) {
         console.log("Client called publish method");
+        this.connection.invoke("SendMessage", user, message);
+
     }
 
-    this.subscribe = function (topic) {
-        console.log("Client called subscribe method");
-    }
 
-    this.unsubscribe = function (topic) {
-        console.log("Client called unsubscribe method");
-    }
-}
-
-function subscribeTest() {
-    console.log("Client called subscribe method");
-}
-
-function publishTest() {
-    console.log("Client called publish method");
-}
-
-function unsubscribeTest() {
-    console.log("Client called unsubscribe method");
 }
