@@ -25,8 +25,8 @@ comm.connection.on("ReceiveGroup", function (message : string) {
 document.getElementById("subscribeButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
-    comm.subscribe(user, topic);
-
+    console.log(comm);
+    comm.subscribeAsync(topic);
 });
 
 document.getElementById("publishButton").addEventListener("click", function () {
@@ -40,7 +40,5 @@ document.getElementById("publishButton").addEventListener("click", function () {
 document.getElementById("unsubscribeButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
-
-    comm.unsubscribe(user, topic);
-
+    comm.unsubscribeAsync(topic);
 });
