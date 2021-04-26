@@ -16,3 +16,4 @@ const MessageType = {
     UNSUBSCRIBE: 6,
     UNSUBSCRIBE_RESPONSE: 7
 }
+

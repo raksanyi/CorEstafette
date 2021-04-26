@@ -2,6 +2,7 @@
 
 import Communicator from "./communicator.js";
 import Message from "./Message.js";
+import { sayHello } from "./app.js";
 
 let comm = new Communicator();
 
@@ -33,7 +34,7 @@ document.getElementById("publishButton").addEventListener("click", function (eve
     var user = document.getElementById("userInput").value;
     var topic = document.getElementById("topicInput").value;
     var message = document.getElementById("messageInput").value;
-
+    sayHello();
     comm.publish(user, topic, message);
 
 });

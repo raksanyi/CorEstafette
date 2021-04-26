@@ -1,8 +1,10 @@
-﻿export default class Communicator {
+﻿import * as signalR from "@microsoft/signalr";
+
+export class Communicator {
+    connection: any;
 
     constructor() {
         this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
-        this.connection.start();
     }
 
     startConnection() {
@@ -28,13 +30,13 @@
     async subscribe(user, topic) {
         console.log("Client called subscribe method");
         this.connection.invoke("SubscribeTopic", user, topic);
-        
+
     }
 
     async unsubscribe(user, topic) {
         console.log("Client called unsubscribe method");
         this.connection.invoke("UnsubscribeTopic", user, topic);
-        
+
     }
 
 }
