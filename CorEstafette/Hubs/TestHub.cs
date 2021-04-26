@@ -30,6 +30,7 @@ namespace CorEstafette.Hubs
         //method for client to publish a message under a topic
         public async Task PublishMessage(string user, string topic, string message) //can be called by a connected client
         {
+            Console.WriteLine("publish called in hub");//test
             await Clients.Group(topic).SendAsync("ReceiveMessage", user, message);
         }
     }

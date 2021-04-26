@@ -3,12 +3,16 @@
 export class Communicator {
     connection: any;
 
-    constructor() {
-        this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
-    }
+    //constructor() {
+    //    this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
+    //    this.connection.start();
+    //}
 
     startConnection() {
+        console.log("inside start_connection")
+        this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
         this.connection.start();
+        console.log(this);
     }
 
     //TODO:
@@ -16,24 +20,24 @@ export class Communicator {
     //2. convert message to json
     //3. subscribe to topic with callback, cache topic-callback pairs
 
-    sendMessage(user, message) {
+    sendMessage(user: string, message: string) {
         console.log("Client called send message to all method");
         this.connection.invoke("SendMessage", user, message);
     }
 
-    publish(user, topic, message) {
+    publish(user: string, topic: string, message: string) {
         console.log("Client called publish method");
         this.connection.invoke("PublishMessage", user, topic, message);
 
     }
 
-    async subscribe(user, topic) {
+    async subscribe(user: string, topic: string) {
         console.log("Client called subscribe method");
         this.connection.invoke("SubscribeTopic", user, topic);
 
     }
 
-    async unsubscribe(user, topic) {
+    async unsubscribe(user: string, topic: string) {
         console.log("Client called unsubscribe method");
         this.connection.invoke("UnsubscribeTopic", user, topic);
 
