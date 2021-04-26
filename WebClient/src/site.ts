@@ -1,10 +1,10 @@
 ﻿import * as signalR from "@microsoft/signalr";
 import { Communicator } from "./communicator";
 
-const comm = new Communicator();
+let comm = new Communicator();
 comm.startConnection();
-console.log(comm.connection);
-console.log('hello');
+console.log(comm.connection);//test
+
 
 comm.connection.on("ReceiveMessage", function (user : string, message : string) {
     let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -25,7 +25,6 @@ comm.connection.on("ReceiveGroup", function (message : string) {
 document.getElementById("subscribeButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
-
     comm.subscribe(user, topic);
 
 });

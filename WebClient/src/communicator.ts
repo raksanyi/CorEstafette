@@ -3,16 +3,12 @@
 export class Communicator {
     connection: any;
 
-    //constructor() {
-    //    this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
-    //    this.connection.start();
-    //}
+    constructor() {
+        this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
+    }
 
     startConnection() {
-        console.log("inside start_connection")
-        this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
         this.connection.start();
-        console.log(this);
     }
 
     //TODO:
