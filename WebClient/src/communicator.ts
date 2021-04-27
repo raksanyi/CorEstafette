@@ -29,11 +29,15 @@ export class Communicator {
 
     //TODO: put the register methods in constructor
     registerReceiveCallback(callback: Function) {
+
         this.connectionWrapper.connection.on(this.receiveMethodName, callback);
+
     }
 
     registerResponseCallback(callback: Function) {
+
         this.connectionWrapper.connection.on(this.subResponseMethodName, callback);
+
     }
 
     //sendMessage(user: string, message: string) {
@@ -48,8 +52,16 @@ export class Communicator {
     
     async subscribeAsync(topic: string, callback: Function) {
         console.log("Client called subscribe method");
-        await this.connectionWrapper.connection.invoke("SubscribeTopicAsync", topic);
-        //TODO: get response here;
+        let result = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", topic);
+        console.log(result);
+        result.then(
+            () => {
+                console.log("success");
+            })
+            .catch((err : any) => {
+                console.log("rejected");
+            });
+
         //if success, add callback function to dictionary
         this.callbacksByTopics.set(topic, callback);
         console.log(this.callbacksByTopics);//test
