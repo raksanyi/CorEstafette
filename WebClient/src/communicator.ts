@@ -4,7 +4,7 @@ export class Communicator {
 
     //singlr connection cannot be started in a constructor; use a wrapper to setup connection
     //TODO: change to private later after adding callbacks
-    public connectionWrapper = new class {
+    private connectionWrapper = new class {
 
         connection: any;
 
@@ -15,8 +15,23 @@ export class Communicator {
 
     }
 
+    //TODO: need a better way to map hub function names
+    receiveMethodName: string;
+    subResponseMethodName: string;
+
     constructor() {
         this.connectionWrapper.establishConnection();
+        this.receiveMethodName = "ReceiveMessage";
+        this.subResponseMethodName = "ReceiveGroup";
+    }
+
+    //TODO: put the register methods in constructor
+    registerReceiveCallback(callback: Function) {
+        this.connectionWrapper.connection.on(this.receiveMethodName, callback);
+    }
+
+    registerResponseCallback(callback: Function) {
+        this.connectionWrapper.connection.on(this.subResponseMethodName, callback);
     }
 
     //sendMessage(user: string, message: string) {
@@ -38,13 +53,5 @@ export class Communicator {
         console.log("Client called unsubscribe method");
         await this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", topic);
     }
-
-    //async getResponse() {
-    //    this.connection.on("ReceiveMessage", function (user: string, message: string) {
-    //        let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            
-    //    });
-    //    return response;
-    //}
 
 }

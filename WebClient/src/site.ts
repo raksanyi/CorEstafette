@@ -3,21 +3,24 @@ import { Communicator } from "./communicator";
 
 let comm = new Communicator();
 
-comm.connectionWrapper.connection.on("ReceiveMessage", function (user : string, message : string) {
+let receiveCallback = function (user: string, message: string) {
     let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     let encodedMsg = user + " says " + msg;
     let li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
-});
+}
 
-comm.connectionWrapper.connection.on("ReceiveGroup", function (message : string) {
+let responseCallback = function (message: string) {
     let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     let encodedMsg = msg;
     let li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
-});
+}
+
+comm.registerReceiveCallback(receiveCallback);
+comm.registerResponseCallback(responseCallback);
 
 document.getElementById("subscribeButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
