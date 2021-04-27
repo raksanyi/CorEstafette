@@ -1,51 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
+using CorEstafette;
 
 namespace WPFClient
 {
     class Communicator
     {
-        private List<String> subscriptions;
-        
+        private readonly HubConnection connection;
+        private readonly List<string> subscribedTopics;
+
         public Communicator( )
         {
-             subscriptions = new List<string>();
+            subscribedTopics = new List<string>();
+            connection = new HubConnectionBuilder()
+                .WithUrl("https://localhost:44392/testhub")
+                .Build();
+
+            connection.StartAsync();
+            connection.Closed += async (error) =>
+            {
+                await Task.Delay(new Random().Next(0, 5) * 1000);
+                await connection.StartAsync();
+            };
         }
 
-        public bool Subscribe(String topic)
+        public async Task<string> SubscribeAsync(string topic)
         {
             if (FindSubscriptionIndex(topic) < 0)
             {
-                subscriptions.Add(topic);
-                return true;
+                await connection.InvokeAsync("SubscribeTopic", topic);
+                subscribedTopics.Add(topic);
+                return "success";
             }
-            return false;
+            return "fail";
         }
 
-        public bool Unsubscribe(String topic)
+        public async Task<string> UnsubscribeAsync(string topic)
         {
             int indexOfTopic = FindSubscriptionIndex(topic);
 
             if (indexOfTopic < 0)
-                return false;
+                return "fail";
 
-            subscriptions.RemoveAt(indexOfTopic);
-            return true;
+            await connection.InvokeAsync("UnsubscribeTopic", topic);
+            subscribedTopics.RemoveAt(indexOfTopic);
+            return "success";
 
         }
 
-        public bool Publish(String topic, String message )
+        public async Task PublishAsync(String topic, String message )
         {
-            return message == "" ? false : true;
+            await connection.InvokeAsync("PublishAsync", topic, message);
+            //return message == "" ? false : true;
             
         }
 
         private int FindSubscriptionIndex(String topic)
         {
-            return subscriptions.IndexOf(topic);
+            return subscribedTopics.IndexOf(topic);
         }
     }
 }

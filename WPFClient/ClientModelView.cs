@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Prism.Commands;
+using System.Threading.Tasks;
 
 namespace WPFClient
 {
@@ -12,28 +13,42 @@ namespace WPFClient
 
         public ClientModelView() 
         {
-            PublishMessage = new DelegateCommand(() =>
+            PublishMessage = new DelegateCommand( async () =>
             {
+                await communicator.PublishAsync(Topic, Content);
                 // Post with communicator here and wait for reply, THEN post message
-                LogMessages = $"New message posted! Topic:{Topic} Message:{Content}{Environment.NewLine}{LogMessages}";
-                OnPropertyChanged(nameof(LogMessages));
+                //LogMessages = $"New message posted! Topic:{Topic} Message:{Content}{Environment.NewLine}{LogMessages}";
+                //OnPropertyChanged(nameof(LogMessages));
             });
 
             // Keeping the async line commented, will put back as soon as the communicator is properly implemented
             //SubscribeCommand = new DelegateCommand(async () =>
-            SubscribeCommand = new DelegateCommand(() =>
+            SubscribeCommand = new DelegateCommand(async () =>
             {
-
-                bool success = communicator.Subscribe(SubscribeTopic);
-                Messages = $"Subscription to topic {SubscribeTopic} was {(success ? "successful" : "unsuccessful")}{Environment.NewLine}{Messages}";
+                var response = await communicator.SubscribeAsync(SubscribeTopic);
+                if( response == null )
+                {
+                    Messages = "Subscription failed." + Environment.NewLine + Messages;
+                    OnPropertyChanged(nameof(Messages));
+                    return;
+                }
+                Messages = $"Subscription to topic {SubscribeTopic} was {(response.Equals("success") ? "successful" : "unsuccessful")}{Environment.NewLine}{Messages}";
+                //Messages = response + Environment.NewLine + Messages;
                 OnPropertyChanged(nameof(Messages));
 
             });
 
-            UnsubscribeCommand = new DelegateCommand(() =>
+            UnsubscribeCommand = new DelegateCommand(async () =>
             {
-                bool success = communicator.Unsubscribe(UnsubscribeTopic);
-                Messages = $"Unsubscription to topic {UnsubscribeTopic} was {(success ? "successful" : "unsuccessful")}{Environment.NewLine}{Messages}";
+                var response = await communicator.UnsubscribeAsync(UnsubscribeTopic);
+                if( response == null )
+                {
+                    Messages = "Unsubscription failed." + Environment.NewLine + Messages;
+                    OnPropertyChanged(nameof(Messages));
+                    return;
+                }
+                Messages = $"Unsubscription to topic {UnsubscribeTopic} was {(response.Equals("success") ? "successful" : "unsuccessful")}{Environment.NewLine}{Messages}";
+                OnPropertyChanged(nameof(Messages));
             });
         }
 
@@ -48,6 +63,13 @@ namespace WPFClient
         public string LogMessages { get; set; }
         public string Messages { get; set; }
 
+        /*public Task OnSubscribeAsync(string response)
+        {
+            Messages += response;
+            OnPropertyChanged(nameof(Messages));
+
+            return Task.CompletedTask;
+        }*/
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
