@@ -1,35 +1,50 @@
 ﻿import * as signalR from "@microsoft/signalr";
 
 export class Communicator {
-    connection: any;
+
+    //singlr connection cannot be started in a constructor; use a wrapper to setup connection
+    //TODO: change to private later after adding callbacks
+    public connectionWrapper = new class {
+
+        connection: any;
+
+        establishConnection() {
+            this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
+            this.connection.start();
+        }
+
+    }
 
     constructor() {
-        this.connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/testhub").build();
+        this.connectionWrapper.establishConnection();
     }
 
-    startConnection() {
-        this.connection.start();
-    }
-
-    sendMessage(user: string, message: string) {
-        console.log("Client called send message to all method");
-        this.connection.invoke("SendMessageAsync", user, message);
-    }
+    //sendMessage(user: string, message: string) {
+    //    console.log("Client called send message to all method");
+    //    this.connectionWrapper.connection.invoke("SendMessageAsync", user, message);
+    //}
 
     publish(user: string, topic: string, message: string) {
         console.log("Client called publish method");
-        this.connection.invoke("PublishMessageAsync", user, topic, message);
-
+        this.connectionWrapper.connection.invoke("PublishMessageAsync", user, topic, message);
     }
-
+    
     async subscribeAsync(topic: string) {
         console.log("Client called subscribe method");
-        await this.connection.invoke("SubscribeTopicAsync", topic);
+        await this.connectionWrapper.connection.invoke("SubscribeTopicAsync", topic);
     }
 
     async unsubscribeAsync(topic: string) {
         console.log("Client called unsubscribe method");
-        await this.connection.invoke("UnsubscribeTopicAsync", topic);
+        await this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", topic);
     }
+
+    //async getResponse() {
+    //    this.connection.on("ReceiveMessage", function (user: string, message: string) {
+    //        let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+    //    });
+    //    return response;
+    //}
 
 }

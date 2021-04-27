@@ -2,11 +2,8 @@
 import { Communicator } from "./communicator";
 
 let comm = new Communicator();
-comm.startConnection();
-console.log(comm.connection);//test
 
-
-comm.connection.on("ReceiveMessage", function (user : string, message : string) {
+comm.connectionWrapper.connection.on("ReceiveMessage", function (user : string, message : string) {
     let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     let encodedMsg = user + " says " + msg;
     let li = document.createElement("li");
@@ -14,7 +11,7 @@ comm.connection.on("ReceiveMessage", function (user : string, message : string) 
     document.getElementById("messagesList").appendChild(li);
 });
 
-comm.connection.on("ReceiveGroup", function (message : string) {
+comm.connectionWrapper.connection.on("ReceiveGroup", function (message : string) {
     let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     let encodedMsg = msg;
     let li = document.createElement("li");
@@ -25,7 +22,7 @@ comm.connection.on("ReceiveGroup", function (message : string) {
 document.getElementById("subscribeButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
-    console.log(comm);
+    
     comm.subscribeAsync(topic);
 });
 
