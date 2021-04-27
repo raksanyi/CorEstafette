@@ -3,7 +3,6 @@
 export class Communicator {
 
     //singlr connection cannot be started in a constructor; use a wrapper to setup connection
-    //TODO: change to private later after adding callbacks
     private connectionWrapper = new class {
 
         connection: any;
@@ -15,14 +14,17 @@ export class Communicator {
 
     }
 
-    //TODO: need a better way to map hub function names
+    //TODO: need a better way to map hub function names?
     receiveMethodName: string;
     subResponseMethodName: string;
+
+    callbacksByTopics: Map<string, Function>;
 
     constructor() {
         this.connectionWrapper.establishConnection();
         this.receiveMethodName = "ReceiveMessage";
         this.subResponseMethodName = "ReceiveGroup";
+        this.callbacksByTopics = new Map();
     }
 
     //TODO: put the register methods in constructor
@@ -44,14 +46,25 @@ export class Communicator {
         this.connectionWrapper.connection.invoke("PublishMessageAsync", user, topic, message);
     }
     
-    async subscribeAsync(topic: string) {
+    async subscribeAsync(topic: string, callback: Function) {
         console.log("Client called subscribe method");
         await this.connectionWrapper.connection.invoke("SubscribeTopicAsync", topic);
+        //TODO: get response here;
+        //if success, add callback function to dictionary
+        this.callbacksByTopics.set(topic, callback);
+        console.log(this.callbacksByTopics);//test
     }
 
     async unsubscribeAsync(topic: string) {
         console.log("Client called unsubscribe method");
         await this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", topic);
+        //if success, remove callback for this topic from dictionary
+
+        if (this.callbacksByTopics.has(topic)) {
+            this.callbacksByTopics.delete(topic);
+            console.log(this.callbacksByTopics);//test
+        }
+
     }
 
 }

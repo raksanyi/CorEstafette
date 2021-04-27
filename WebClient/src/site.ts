@@ -19,6 +19,10 @@ let responseCallback = function (message: string) {
     document.getElementById("messagesList").appendChild(li);
 }
 
+let testTopicCallback = function () {
+    console.log("I subscribed to a topic");
+}
+
 comm.registerReceiveCallback(receiveCallback);
 comm.registerResponseCallback(responseCallback);
 
@@ -26,7 +30,7 @@ document.getElementById("subscribeButton").addEventListener("click", function ()
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
     
-    comm.subscribeAsync(topic);
+    comm.subscribeAsync(topic, testTopicCallback);
 });
 
 document.getElementById("publishButton").addEventListener("click", function () {
