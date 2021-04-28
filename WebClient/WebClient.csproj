@@ -17,7 +17,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
-    <None Include="src\communicator.ts" />
     <None Include="src\site.ts" />
   </ItemGroup>
   <ItemGroup>

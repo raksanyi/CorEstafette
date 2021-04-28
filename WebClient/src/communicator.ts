@@ -12,66 +12,67 @@ export class Communicator {
             this.connection.start();
         }
 
-    }
+        //map the handler to the hub method
+        registerCallback(hubMethod: string, handler: Function) {
+            this.connection.on(hubMethod, handler);
+        }
 
-    //TODO: need a better way to map hub function names?
-    receiveMethodName: string;
-    subResponseMethodName: string;
+        //deregister all callbacks from the hub method
+        deregisterAllCallbacks(hubMethod: string) {
+            this.connection.off(hubMethod);
+        }
+
+    }
 
     callbacksByTopics: Map<string, Function>;
 
     constructor() {
         this.connectionWrapper.establishConnection();
-        this.receiveMethodName = "ReceiveMessage";
-        this.subResponseMethodName = "ReceiveGroup";
         this.callbacksByTopics = new Map();
+        this.connectionWrapper.registerCallback("ReceiveMessage", (user: string, message: string) => {
+            console.log("inside receiveHandler");
+            //TODO: deal with message with multiple topics; service need to send topic to the communicator
+            let testTopic = "A";//TODO: delete later; need to get this from the service
+            console.log(this.callbacksByTopics);
+            let topicCallback = this.callbacksByTopics.get(testTopic);
+            console.log("get callback:");
+            console.log(topicCallback);
+            topicCallback(user, message);//TODO: add parameters list?
+        });
     }
 
-    //TODO: put the register methods in constructor
-    registerReceiveCallback(callback: Function) {
-
-        this.connectionWrapper.connection.on(this.receiveMethodName, callback);
-
-    }
-
-    registerResponseCallback(callback: Function) {
-
-        this.connectionWrapper.connection.on(this.subResponseMethodName, callback);
-
-    }
-
-    //sendMessage(user: string, message: string) {
-    //    console.log("Client called send message to all method");
-    //    this.connectionWrapper.connection.invoke("SendMessageAsync", user, message);
-    //}
-
+    //publish message under certain topic
     publish(user: string, topic: string, message: string) {
         console.log("Client called publish method");
         this.connectionWrapper.connection.invoke("PublishMessageAsync", user, topic, message);
     }
-    
-    async subscribeAsync(topic: string, callback: Function) {
+
+    //subscribe to a topic, store the callback function for that topic, and invoke responseCallback for state of subscription
+    async subscribeAsync(topic: string, topicCallback: Function, responseCallback: Function) {
         console.log("Client called subscribe method");
         let result = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", topic);
-        console.log(result);
-        result.then(
-            () => {
-                console.log("success");
-            })
-            .catch((err : any) => {
-                console.log("rejected");
-            });
-
-        //if success, add callback function to dictionary
-        this.callbacksByTopics.set(topic, callback);
-        console.log(this.callbacksByTopics);//test
+        console.log(result);//test
+        let statusCode;
+        result.then(() => {
+            console.log("success");//test
+            statusCode = 0;
+            responseCallback(statusCode);
+            //TODO: can client change the callback for the same topic? if so, then:
+            //TODO: deregister the cached callback if topic has been subscribed, and cache new callback
+            //add callback function to the dictionary
+            this.callbacksByTopics.set(topic, topicCallback);
+            console.log(this.callbacksByTopics);//test
+        }).catch((err: any) => {
+            console.log("rejected");//test
+            statusCode = 1;
+            responseCallback(statusCode);
+        });
     }
 
     async unsubscribeAsync(topic: string) {
         console.log("Client called unsubscribe method");
         await this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", topic);
-        //if success, remove callback for this topic from dictionary
-
+        //TODO: add promise logic here
         if (this.callbacksByTopics.has(topic)) {
             this.callbacksByTopics.delete(topic);
             console.log(this.callbacksByTopics);//test
