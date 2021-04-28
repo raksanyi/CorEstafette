@@ -20,9 +20,9 @@ namespace CorEstafette.Hubs
 
         }
 
-        public async Task PublishMessageAsync(string user, string topic, string message) //can be called by a connected client
+        public async Task PublishMessageAsync(string topic, string message) //can be called by a connected client
         {
-            await Clients.Group(topic).SendAsync("ReceiveMessage", user, topic, message);
+            await Clients.Group(topic).SendAsync("ReceiveMessage", topic, message);
         }
     }
 }
