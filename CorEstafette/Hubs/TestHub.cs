@@ -7,22 +7,16 @@ namespace CorEstafette.Hubs
 {
     public class TestHub : Hub
     {
-
-        public async Task SendMessageAsync(string user, string message) //can be called by a connected client
-        {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
-        }
-
         public async Task SubscribeTopicAsync(string topic)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, topic);
-            //await Clients.Group(topic).SendAsync("ReceiveGroup", $"{Context.ConnectionId} has joined the group {topic}.");
+            //await Clients.Caller.SendAsync("ReceiveGroup", $"{Context.ConnectionId} has joined the group {topic}.");
         }
 
         public async Task UnsubscribeTopicAsync(string topic)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, topic);
-            //await Clients.Group(topic).SendAsync("ReceiveGroup", $"{Context.ConnectionId} has lefted the group {topic}.");
+            //await Clients.Caller.SendAsync("ReceiveGroup", $"{Context.ConnectionId} has lefted the group {topic}.");
 
         }
 
