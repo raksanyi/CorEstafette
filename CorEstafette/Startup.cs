@@ -55,6 +55,14 @@ namespace CorEstafette
                     .AllowCredentials();
             });
 
+            app.UseCors(builder =>
+            {
+                builder.WithOrigins("https://localhost:5003")
+                    .AllowAnyHeader()
+                    .WithMethods("GET", "POST")
+                    .AllowCredentials();
+            });
+
             app.UseRouting();
 
             app.UseAuthorization();
@@ -62,6 +70,7 @@ namespace CorEstafette
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapControllers();
                 endpoints.MapHub<TestHub>("/testhub"); //for testing purpose
             });
         }
