@@ -1,68 +1,74 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
-using CorEstafette;
 
 namespace WPFClient
 {
     class Communicator
     {
         private readonly HubConnection connection;
-        private readonly List<string> subscribedTopics;
+        private readonly Dictionary<string, Func<string, Task>> callBackTopics;
 
         public Communicator( )
         {
-            subscribedTopics = new List<string>();
+            callBackTopics = new Dictionary<string, Func<string, Task>>();
+            
             connection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:44392/testhub")
                 .Build();
 
-            connection.StartAsync();
+            _ = Task.Run(async() => { await connection.StartAsync(); });
             connection.Closed += async (error) =>
             {
                 await Task.Delay(new Random().Next(0, 5) * 1000);
                 await connection.StartAsync();
             };
+
+            connection.On<string>(nameof(OnSubscribe), OnSubscribe);
+            connection.On<string>(nameof(OnUnsubscribe), OnUnsubscribe);
+            connection.On<string, string>(nameof(OnPublish), OnPublish);
         }
 
-        public async Task<string> SubscribeAsync(string topic)
+        private void OnSubscribe(string response)
         {
-            if (FindSubscriptionIndex(topic) < 0)
-            {
-                await connection.InvokeAsync("SubscribeTopic", topic);
-                subscribedTopics.Add(topic);
-                return "success";
-            }
-            return "fail";
+            Debug.WriteLine(response);
+         }
+
+        private void OnUnsubscribe(string response)
+        {
+            Debug.WriteLine(response);
+        }
+
+        private void OnPublish(string topic, string content)
+        {
+            callBackTopics[topic](content);
+        }
+        public async Task<string> SubscribeAsync(string topic, Func<string, Task> callBack)
+        {
+            if (callBackTopics.ContainsKey(topic))
+                return "fail";
+            await connection.InvokeAsync("SubscribeTopicAsync", topic);
+            if (callBack == null)
+                return null;
+            callBackTopics[topic] = callBack;
+            return "success";
         }
 
         public async Task<string> UnsubscribeAsync(string topic)
         {
-            int indexOfTopic = FindSubscriptionIndex(topic);
-
-            if (indexOfTopic < 0)
+            if(!callBackTopics.ContainsKey(topic))
                 return "fail";
 
             await connection.InvokeAsync("UnsubscribeTopic", topic);
-            subscribedTopics.RemoveAt(indexOfTopic);
+            callBackTopics.Remove(topic);
             return "success";
-
         }
 
         public async Task PublishAsync(String topic, String message )
         {
             await connection.InvokeAsync("PublishAsync", topic, message);
-            //return message == "" ? false : true;
-            
-        }
-
-        private int FindSubscriptionIndex(String topic)
-        {
-            return subscribedTopics.IndexOf(topic);
         }
     }
 }
