@@ -29,15 +29,12 @@ export class Communicator {
     constructor() {
         this.connectionWrapper.establishConnection();
         this.callbacksByTopics = new Map();
-        this.connectionWrapper.registerCallback("ReceiveMessage", (user: string, message: string) => {
+        this.connectionWrapper.registerCallback("ReceiveMessage", (user: string, topic: string, message: string) => {
             console.log("inside receiveHandler");
-            //TODO: deal with message with multiple topics; service need to send topic to the communicator
-            let testTopic = "A";//TODO: delete later; need to get this from the service
             console.log(this.callbacksByTopics);
-            let topicCallback = this.callbacksByTopics.get(testTopic);
-            console.log("get callback:");
-            console.log(topicCallback);
-            topicCallback(user, message);//TODO: add parameters list?
+            //TODO: check if topic exists? 
+            let topicCallback = this.callbacksByTopics.get(topic);
+            topicCallback(user, topic, message);//TODO: add parameters list?
         });
     }
 

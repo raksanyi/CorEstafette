@@ -4,10 +4,10 @@ import { Communicator } from "./communicator";
 let comm = new Communicator();
 
 //callback for receiving messages
-let onReceive = function (user: string, message: string) {
+let onReceive = function (user: string, topic: string, message: string) {
     console.log("onReceive called in site.ts");
     let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    let encodedMsg = user + " says " + msg + " under topic ";
+    let encodedMsg = user + " says " + msg + " under topic " + topic;
     let li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
