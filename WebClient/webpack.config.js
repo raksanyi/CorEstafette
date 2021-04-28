@@ -1,10 +1,11 @@
 ﻿const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const { CleanWebpackPlugin } = require("./node_modules/clean-webpack-plugin/dist/clean-webpack-plugin");
 module.exports = {
   entry: "./src/site.ts",
   output: {
     path: path.resolve(__dirname, "wwwroot/js/"),
-    filename: "site.js",
+    filename: "main.js",
     publicPath: "/"
   },
   resolve: {
@@ -25,6 +26,7 @@ module.exports = {
   plugins: [
     new MiniCssExtractPlugin({
       filename: "css/[name].css"
-    })
+    }),
+    new CleanWebpackPlugin(),
   ]
 };
