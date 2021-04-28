@@ -26,7 +26,7 @@ namespace CorEstafette
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
-            //services.AddCors();
+            services.AddCors();
             services.AddSignalR();//configure signalR hubs
         }
 
@@ -37,15 +37,15 @@ namespace CorEstafette
             {
                 app.UseDeveloperExceptionPage();
             }
-            /*else
+            else
             {
                 app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
-            }*/
+            }
 
             app.UseHttpsRedirection();
-            /*app.UseStaticFiles();
+            app.UseStaticFiles();
 
             app.UseCors(builder =>
             {
@@ -53,7 +53,7 @@ namespace CorEstafette
                     .AllowAnyHeader()
                     .WithMethods("GET", "POST")
                     .AllowCredentials();
-            });*/
+            });
 
             app.UseRouting();
 
@@ -61,7 +61,7 @@ namespace CorEstafette
 
             app.UseEndpoints(endpoints =>
             {
-                //endpoints.MapRazorPages();
+                endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapHub<TestHub>("/testhub"); //for testing purpose
             });

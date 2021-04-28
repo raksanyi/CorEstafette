@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Prism.Commands;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace WPFClient
 {
@@ -16,24 +17,19 @@ namespace WPFClient
             PublishMessage = new DelegateCommand( async () =>
             {
                 await communicator.PublishAsync(Topic, Content);
-                // Post with communicator here and wait for reply, THEN post message
-                //LogMessages = $"New message posted! Topic:{Topic} Message:{Content}{Environment.NewLine}{LogMessages}";
-                //OnPropertyChanged(nameof(LogMessages));
             });
 
-            // Keeping the async line commented, will put back as soon as the communicator is properly implemented
-            //SubscribeCommand = new DelegateCommand(async () =>
             SubscribeCommand = new DelegateCommand(async () =>
             {
-                var response = await communicator.SubscribeAsync(SubscribeTopic);
-                if( response == null )
+                var response = await communicator.SubscribeAsync(SubscribeTopic, OnSubscribeAsync);
+               
+                if ( response == null )
                 {
                     Messages = "Subscription failed." + Environment.NewLine + Messages;
                     OnPropertyChanged(nameof(Messages));
                     return;
                 }
                 Messages = $"Subscription to topic {SubscribeTopic} was {(response.Equals("success") ? "successful" : "unsuccessful")}{Environment.NewLine}{Messages}";
-                //Messages = response + Environment.NewLine + Messages;
                 OnPropertyChanged(nameof(Messages));
 
             });
@@ -63,13 +59,13 @@ namespace WPFClient
         public string LogMessages { get; set; }
         public string Messages { get; set; }
 
-        /*public Task OnSubscribeAsync(string response)
+        public Task OnSubscribeAsync(string response)
         {
-            Messages += response;
+            Messages = response + Environment.NewLine + Messages;
             OnPropertyChanged(nameof(Messages));
 
             return Task.CompletedTask;
-        }*/
+        }
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
