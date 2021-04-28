@@ -20,16 +20,10 @@ namespace CorEstafette.Hubs
         }
 
         //method for client to unsubscribe from a topic
-        public async Task UnsubscribeTopic(string topic)
+        public async Task UnsubscribeTopicAsync(string topic)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, topic);
             await Clients.Caller.SendAsync("OnUnsubscribe", $"Successfully unsubscribed fron topic {topic}");
-        }
-
-        //method for client to publish a message under a topic
-        public async Task PublishMessage(string user, string topic, string message) //can be called by a connected client
-        {
-            await Clients.Group(topic).SendAsync("ReceiveMessage", user, message);
         }
     }
 }
