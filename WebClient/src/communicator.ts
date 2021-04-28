@@ -36,7 +36,7 @@ export class Communicator {
     constructor() {
         this.connectionWrapper.establishConnection();
         this.callbacksByTopics = new Map();
-        this.connectionWrapper.registerCallback("ReceiveMessage", (topic: string, message: string) => {
+        this.connectionWrapper.registerCallback("onPublish", (topic: string, message: string) => {
             console.log("inside receiveHandler");
             console.log(this.callbacksByTopics);
             //TODO: check if topic exists? 
@@ -48,7 +48,7 @@ export class Communicator {
     //publish message under certain topic
     publish(user: string, topic: string, message: string) {
         console.log("Client called publish method");
-        this.connectionWrapper.connection.invoke("PublishMessageAsync", topic, message);
+        this.connectionWrapper.connection.invoke("PublishAsync", topic, message);
     }
 
     //subscribe to a topic, store the callback function for that topic, and invoke responseCallback for state of subscription
