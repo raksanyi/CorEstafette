@@ -8,10 +8,6 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="src\" />
-    <Folder Include="wwwroot\js\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="package.json" Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -21,5 +17,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Remove="package.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="src\ICommunicator.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="src\ICommunicator.ts" />
   </ItemGroup>
 </Project>

@@ -16,7 +16,7 @@
 
 {
   "compilerOptions": {
-    //"outDir": "./dist/",
+    "outDir": "wwwroot/js",
     "noImplicitAny": true,
     "sourceMap": true,
     "module": "es6",
