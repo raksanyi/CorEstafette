@@ -4,14 +4,15 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Prism.Commands;
 using System.Threading.Tasks;
+using Shared;
 using System.Diagnostics;
 
 namespace WPFClient
 {
     class ClientModelView : INotifyPropertyChanged
     {
-        private Communicator communicator = new Communicator();
-
+        private ICommunicator communicator = new Communicator();
+        
         public ClientModelView() 
         {
             PublishMessage = new DelegateCommand( async () =>
