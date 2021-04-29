@@ -53,23 +53,16 @@ namespace CorEstafette.Hubs
             await Clients.GroupExcept(message.topic, Context.ConnectionId).SendAsync("OnPublish", message);
         }
 
-        //method for client to subscribe for a topic
-        //public async Task SubscribeTopicAsync(Message message)
-        //{
-        //    await Groups.AddToGroupAsync(Context.ConnectionId, message.topic);
-        //    var responseToSend = new Response(message, true);
-        //    await Clients.Caller.SendAsync("OnSubscribe", responseToSend);
-        //}
-
         public async Task<Response> SubscribeTopicAsync(Message message)
         {
+            //Test for timeout in communicator
+            //System.Threading.Thread.Sleep(4000);
             await Groups.AddToGroupAsync(Context.ConnectionId, message.topic);
             var responseToSend = new Response(message, true);
             await Clients.Caller.SendAsync("OnSubscribe", responseToSend);
             return responseToSend;
         }
 
-        //method for client to unsubscribe from a topic
         public async Task<Response> UnsubscribeTopicAsync(Message message)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, message.topic);
@@ -77,31 +70,6 @@ namespace CorEstafette.Hubs
             await Clients.Caller.SendAsync("OnUnsubscribe", responseToSend);
             return responseToSend;
         }
-
-        //public async Task SubscribeTopicAsync(Message message)
-        //{
-        //    //System.Console.WriteLine("hello");
-        //    await Groups.AddToGroupAsync(Context.ConnectionId, message.topic);
-        //    //Turn IMessage to IResponse
-        //    //Send the IResponse
-        //    //var responseToSend = new Response(message.correlationId, message.content, message.sender, message.topic, true);
-        //    var responseToSend = new Response(message, true);
-        //    await Clients.Group(responseToSend.topic).SendAsync("ReceiveGroup", responseToSend);
-        //}
-
-        //public async Task UnsubscribeTopicAsync(Message message)
-        //{
-        //    await Groups.RemoveFromGroupAsync(Context.ConnectionId, message.topic);
-        //    var responseToSend = new Response(message, true);
-        //    await Clients.Group(responseToSend.topic).SendAsync("ReceiveGroup", responseToSend);
-        //    //await Clients.Group(topic).SendAsync("ReceiveGroup", $"{Context.ConnectionId} has lefted the group {topic}.");
-
-        //}
-
-        //public async Task PublishMessageAsync(Message message) //can be called by a connected client
-        //{
-        //    await Clients.Group(message.topic).SendAsync("ReceiveMessage", message);
-        //}
 
     }
 }

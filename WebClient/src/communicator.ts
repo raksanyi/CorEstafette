@@ -34,22 +34,14 @@ export class Communicator implements ICommunicator {
     private callbacksByTopics: Map<string, (topic: string, message: string)=> any>;
     private responseByCorrelationIds: Map<string, (statusCode: number) => any>;
 
-    /*
-    //status code
-    SUCCEEDED = 0;
-    REJECTED = 1;
-    DUPLICATE_SUB = 2;
-    DUPLICATE_UNSUB = 3;
-    */
-
     constructor() {
         this.connectionWrapper.establishConnection("https://localhost:5001/testhub");
         this.callbacksByTopics = new Map();
         this.responseByCorrelationIds = new Map();
 
         this.connectionWrapper.registerCallback("onPublish", (objectReceived: IMessage) => {
-            console.log("inside receiveHandler");//test
-            console.log(this.callbacksByTopics);//test
+            //console.log("inside receiveHandler");//test
+            //console.log(this.callbacksByTopics);//test
             const messageReceived: IMessage = <IMessage>objectReceived;
 
             let topicCallback = this.callbacksByTopics.get(messageReceived.topic);
@@ -60,9 +52,8 @@ export class Communicator implements ICommunicator {
 
     //publish message under certain topic
     publish(topic: string, message: string) {
-        console.log("Client called publish method");
+        console.log("Client called publish method");//test
         let correlationID = Guid.create().toString();
-        console.log("correlationID" + correlationID);
         let messageToSend = new Message(correlationID, message, "user1", topic);
         console.log(messageToSend)
         this.connectionWrapper.connection.invoke("PublishAsync", messageToSend);
@@ -70,7 +61,7 @@ export class Communicator implements ICommunicator {
 
 
     async subscribeAsync(topic: string, topicCallback: (topic: string, message: string) => any): Promise<IResponse>{
-        console.log("Client called subscribe method");
+        console.log("Client called subscribe method");//test
 
         if (this.callbacksByTopics.has(topic)) {//cannot subscribe twice
 
@@ -102,24 +93,6 @@ export class Communicator implements ICommunicator {
             console.log(taskResult);
 
             return taskResult;
-            /*
-            result.then(() => {
-                console.log("sub success");//test
-                //add callback function to the dictionary
-                this.callbacksByTopics.set(topic, topicCallback);
-
-                return new Promise<IResponse>((resolve, reject) => {
-                    resolve(this.SUCCEEDED);//TODO: change this to IResponse
-                });
-                //subResponseCallback(this.SUCCEEDED);
-            }).catch((err: any) => {
-                console.log("sub rejected");//test
-                return new Promise<IResponse>((resolve, reject) => {//TODO: change this to IResponse Promise
-                    reject("Service rejected the subscription");
-                });
-                //subResponseCallback(this.REJECTED);
-            });
-            */
         }
 
     }
@@ -157,30 +130,6 @@ export class Communicator implements ICommunicator {
             console.log(taskResult);
 
             return taskResult;
-
-            /*
-            let correlationID = Guid.create().toString();
-            let messageToSend = new Message(correlationID, "", "user1", topic);
-            let result = this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", messageToSend);
-            console.log(result);//test
-
-            result.then(() => {
-                console.log("unsub success");//test
-                //remove from dictionary
-                this.callbacksByTopics.delete(topic);
-
-                return new Promise<IResponse>((resolve, reject) => {
-                    resolve(this.SUCCEEDED);
-                });
-                //unsubResponseCallback(this.SUCCEEDED);
-            }).catch((err: any) => {
-                console.log("unsub rejected");//test
-                return new Promise<IResponse>((resolve, reject) => {
-                    reject("Service rejected unsubscription");
-                });
-                //unsubResponseCallback(this.REJECTED);
-            });*/
         }
     }
-
 }
