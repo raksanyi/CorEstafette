@@ -61,7 +61,7 @@ namespace WPFClient
             if(!callBackTopics.ContainsKey(topic))
                 return "fail";
 
-            await connection.InvokeAsync("UnsubscribeTopic", topic);
+            await connection.InvokeAsync("UnsubscribeTopicAsync", topic);
             callBackTopics.Remove(topic);
             return "success";
         }
