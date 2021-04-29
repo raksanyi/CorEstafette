@@ -1,5 +1,4 @@
-﻿import * as signalR from "@microsoft/signalr";
-import { Communicator } from "./communicator";
+﻿import { Communicator } from "./communicator";
 
 let comm = new Communicator();
 
@@ -49,7 +48,7 @@ document.getElementById("publishButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
     let message = (<HTMLInputElement>document.getElementById("messageInput")).value;
-    comm.publish(user, topic, message);
+    comm.publish(topic, message);
 
 });
 
