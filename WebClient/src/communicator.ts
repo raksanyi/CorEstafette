@@ -1,4 +1,6 @@
 ﻿import * as signalR from "@microsoft/signalr";
+import { Message } from "./message";
+import { IMessage } from "./IMessage";
 
 export class Communicator {
 
@@ -29,26 +31,56 @@ export class Communicator {
     constructor() {
         this.connectionWrapper.establishConnection();
         this.callbacksByTopics = new Map();
-        this.connectionWrapper.registerCallback("ReceiveMessage", (user: string, message: string) => {
+        //this.connectionWrapper.registerCallback("ReceiveMessage", (user: string, message: string) => {
+        //    console.log("inside receiveHandler");
+        //    //TODO: deal with message with multiple topics; service need to send topic to the communicator
+        //    let testTopic = "A";//TODO: delete later; need to get this from the service
+        //    console.log(this.callbacksByTopics);
+        //    let topicCallback = this.callbacksByTopics.get(testTopic);
+        //    console.log("get callback:");
+        //    console.log(topicCallback);
+        //    topicCallback(user, message);
+        //    //TODO: add parameters list?
+
+        //});
+
+        //New code for receiving message
+        this.connectionWrapper.registerCallback("ReceiveMessage", (objectReceived: IMessage) => {   
             console.log("inside receiveHandler");
-            //TODO: deal with message with multiple topics; service need to send topic to the communicator
-            let testTopic = "A";//TODO: delete later; need to get this from the service
-            console.log(this.callbacksByTopics);
-            let topicCallback = this.callbacksByTopics.get(testTopic);
-            console.log("get callback:");
-            console.log(topicCallback);
-            topicCallback(user, message);//TODO: add parameters list?
+            console.log("objectReceived" + objectReceived);
+            const messageReceived: IMessage = <IMessage>objectReceived;
+     
+            let topicReceived = messageReceived.topic;
+            console.log("topicReceived:" + topicReceived);
+
+            let topicCallback = this.callbacksByTopics.get(topicReceived);
+            console.log("get callback:" + topicCallback);
+
+            topicCallback(messageReceived.sender, messageReceived.content);
         });
     }
 
-    //publish message under certain topic
+
+    //NEW: publish message by sending a message object 
     publish(user: string, topic: string, message: string) {
         console.log("Client called publish method");
-        this.connectionWrapper.connection.invoke("PublishMessageAsync", user, topic, message);
+
+        let messageToSend = new Message("", message, user, topic);
+        console.log(messageToSend)
+        this.connectionWrapper.connection.invoke("PublishMessageAsync", messageToSend);
     }
+
+    ////OLD: publish message under certain topic
+    //publish(user: string, topic: string, message: string) {
+
+    //    console.log("Client called publish method");
+    //    this.connectionWrapper.connection.invoke("PublishMessageAsync", user, topic, message);
+    //}
 
     //subscribe to a topic, store the callback function for that topic, and invoke responseCallback for state of subscription
     async subscribeAsync(topic: string, topicCallback: Function, responseCallback: Function) {
+
+       
         console.log("Client called subscribe method");
         let result = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", topic);
         console.log(result);//test

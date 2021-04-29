@@ -4,6 +4,7 @@ import { Communicator } from "./communicator";
 let comm = new Communicator();
 
 //callback for receiving messages
+
 let onReceive = function (user: string, message: string) {
     console.log("onReceive called in site.ts");
     let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
