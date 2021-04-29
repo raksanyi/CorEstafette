@@ -1,7 +1,7 @@
 ﻿import * as signalR from "@microsoft/signalr";
+import { ICommunicator } from "./ICommunicator";
 
-
-export class Communicator {
+export class Communicator implements ICommunicator {
 
     //singlr connection cannot be started in a constructor; use a wrapper to setup connection
     private connectionWrapper = new class {
