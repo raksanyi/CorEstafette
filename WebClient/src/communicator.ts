@@ -1,4 +1,5 @@
 ﻿import * as signalR from "@microsoft/signalr";
+import { Guid } from "guid-typescript";
 import { Message } from "./message";
 import { IMessage } from "./IMessage";
 
@@ -64,8 +65,9 @@ export class Communicator {
     //NEW: publish message by sending a message object 
     publish(user: string, topic: string, message: string) {
         console.log("Client called publish method");
-
-        let messageToSend = new Message("", message, user, topic);
+        let correlationID = Guid.create().toString();
+        console.log("correlationID" + correlationID);
+        let messageToSend = new Message(correlationID, message, user, topic);
         console.log(messageToSend)
         this.connectionWrapper.connection.invoke("PublishMessageAsync", messageToSend);
     }
@@ -78,12 +80,50 @@ export class Communicator {
     //}
 
     //subscribe to a topic, store the callback function for that topic, and invoke responseCallback for state of subscription
-    async subscribeAsync(topic: string, topicCallback: Function, responseCallback: Function) {
+    //async subscribeAsync(topic: string, topicCallback: Function, responseCallback: Function) {
 
        
+    //    console.log("Client called subscribe method");
+    //    let result = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", topic);
+    //    console.log(result);//test
+    //    let statusCode;
+    //    result.then(() => {
+    //        console.log("success");//test
+    //        statusCode = 0;
+    //        responseCallback(statusCode);
+    //        //TODO: can client change the callback for the same topic? if so, then:
+    //        //TODO: deregister the cached callback if topic has been subscribed, and cache new callback
+    //        //add callback function to the dictionary
+    //        this.callbacksByTopics.set(topic, topicCallback);
+    //        console.log(this.callbacksByTopics);//test
+    //    }).catch((err: any) => {
+    //        console.log("rejected");//test
+    //        statusCode = 1;
+    //        responseCallback(statusCode);
+    //    });
+    //}
+
+    //async unsubscribeAsync(topic: string) {
+    //    console.log("Client called unsubscribe method");
+    //    await this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", topic);
+    //    //TODO: add promise logic here
+    //    if (this.callbacksByTopics.has(topic)) {
+    //        this.callbacksByTopics.delete(topic);
+    //        console.log(this.callbacksByTopics);//test
+    //    }
+
+    //}
+
+    async subscribeAsync(topic: string, topicCallback: Function, responseCallback: Function) {
+
+
         console.log("Client called subscribe method");
-        let result = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", topic);
+
+        let correlationID = Guid.create().toString();
+        let messageToSend = new Message(correlationID, "", "user1", topic);
+        let result = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", messageToSend);
         console.log(result);//test
+
         let statusCode;
         result.then(() => {
             console.log("success");//test
@@ -103,7 +143,11 @@ export class Communicator {
 
     async unsubscribeAsync(topic: string) {
         console.log("Client called unsubscribe method");
-        await this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", topic);
+
+        let correlationID = Guid.create().toString();
+        let messageToSend = new Message(correlationID, "", "user1", topic);
+        await this.connectionWrapper.connection.invoke("SubscribeTopicAsync", messageToSend);
+
         //TODO: add promise logic here
         if (this.callbacksByTopics.has(topic)) {
             this.callbacksByTopics.delete(topic);
