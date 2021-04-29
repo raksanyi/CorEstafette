@@ -12,6 +12,7 @@ let onReceive = function (topic: string, message: string) {
     document.getElementById("messagesList").appendChild(li);
 }
 
+/*
 //callback for subscribe response
 let onSubscribe = function (statuscode: number) {
     let li = document.createElement("li");
@@ -37,11 +38,21 @@ let onUnsubscribe = function (statuscode: number) {
     }
     document.getElementById("messagesList").appendChild(li);
 }
+*/
 
 document.getElementById("subscribeButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
-    comm.subscribeAsync(topic, onReceive, onSubscribe);
+    let result = comm.subscribeAsync(topic, onReceive);
+    result.then(() => {
+        let li = document.createElement("li");
+        li.textContent = "subscription success";
+        document.getElementById("messagesList").appendChild(li);
+    }).catch((err: any) => {
+        let li = document.createElement("li");
+        li.textContent = "subscription failed";
+        document.getElementById("messagesList").appendChild(li);
+    });
 });
 
 document.getElementById("publishButton").addEventListener("click", function () {
@@ -55,5 +66,14 @@ document.getElementById("publishButton").addEventListener("click", function () {
 document.getElementById("unsubscribeButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
-    comm.unsubscribeAsync(topic, onUnsubscribe);
+    let result = comm.unsubscribeAsync(topic);
+    result.then(() => {
+        let li = document.createElement("li");
+        li.textContent = "unsubscription success";
+        document.getElementById("messagesList").appendChild(li);
+    }).catch((err: any) => {
+        let li = document.createElement("li");
+        li.textContent = "unsubscription failed";
+        document.getElementById("messagesList").appendChild(li);
+    });
 });

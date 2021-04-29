@@ -25,7 +25,8 @@ export class Communicator implements ICommunicator {
 
     }
 
-    private callbacksByTopics: Map<string, (arg1: string, arg2: string)=> any>;
+    private callbacksByTopics: Map<string, (topic: string, message: string)=> any>;
+    private responseByCorrelationIds: Map<string, (statusCode: number) => any>;
 
     //status code
     SUCCEEDED = 0;
@@ -36,13 +37,13 @@ export class Communicator implements ICommunicator {
     constructor() {
         this.connectionWrapper.establishConnection("https://localhost:5001/testhub");
         this.callbacksByTopics = new Map();
+        this.responseByCorrelationIds = new Map();
         this.connectionWrapper.registerCallback("onPublish", (topic: string, message: string) => {
-            console.log("inside receiveHandler");
-            console.log(this.callbacksByTopics);
-            if (this.callbacksByTopics.has(topic)) {
-                let topicCallback = this.callbacksByTopics.get(topic);
-                topicCallback(topic, message);//TODO: does callback have more parameters
-            }
+            console.log("inside receiveHandler");//test
+            console.log(this.callbacksByTopics);//test
+            let topicCallback = this.callbacksByTopics.get(topic);
+            topicCallback(topic, message);//invoke callback
+            //TODO: does callback have more parameters
         });
     }
 
@@ -53,11 +54,13 @@ export class Communicator implements ICommunicator {
     }
 
     //subscribe to a topic, store the callback function for that topic, and invoke responseCallback for state of subscription
-    async subscribeAsync(topic: string, topicCallback: (arg1: string, arg2: string) => any, subResponseCallback: (arg1: number) => any) {
+    async subscribeAsync(topic: string, topicCallback: (topic: string, message: string) => any) : Promise<number>{
         console.log("Client called subscribe method");
 
         if (this.callbacksByTopics.has(topic)) {
-            subResponseCallback(this.DUPLICATE_SUB);
+            return new Promise<number>((resolve, reject) => {
+                reject("You have subscribed to this topic");
+            });
         } else {
             let result = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", topic);
             console.log(result);//test
@@ -66,34 +69,49 @@ export class Communicator implements ICommunicator {
                 console.log("sub success");//test
                 //add callback function to the dictionary
                 this.callbacksByTopics.set(topic, topicCallback);
-                console.log(this.callbacksByTopics);//test
-                subResponseCallback(this.SUCCEEDED);
+
+                return new Promise<number>((resolve, reject) => {
+                    resolve(this.SUCCEEDED);//TODO: change this to IResponse
+                });
+                //subResponseCallback(this.SUCCEEDED);
             }).catch((err: any) => {
                 console.log("sub rejected");//test
-                subResponseCallback(this.REJECTED);
+                return new Promise<number>((resolve, reject) => {//TODO: change this to IResponse Promise
+                    reject("Service rejected the subscription");
+                });
+                //subResponseCallback(this.REJECTED);
             });
         }
 
     }
 
-    async unsubscribeAsync(topic: string, unsubResponseCallback: (arg1: number) => any) {
+    async unsubscribeAsync(topic: string) : Promise<number>{
         console.log("Client called unsubscribe method");
 
         if (!this.callbacksByTopics.has(topic)) {
-            unsubResponseCallback(this.DUPLICATE_UNSUB);
+            return new Promise<number>((resolve, reject) => {
+                reject("You need to subscribe first before unsubscribing");
+            });
+            //unsubResponseCallback(this.DUPLICATE_UNSUB);
         } else {
             let result = this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", topic);
             console.log(result);//test
 
             result.then(() => {
                 console.log("unsub success");//test
-                unsubResponseCallback(this.SUCCEEDED);
                 //remove from dictionary
                 this.callbacksByTopics.delete(topic);
-                console.log(this.callbacksByTopics);//test
+
+                return new Promise<number>((resolve, reject) => {
+                    resolve(this.SUCCEEDED);
+                });
+                //unsubResponseCallback(this.SUCCEEDED);
             }).catch((err: any) => {
                 console.log("unsub rejected");//test
-                unsubResponseCallback(this.REJECTED);
+                return new Promise<number>((resolve, reject) => {
+                    reject("Service rejected unsubscription");
+                });
+                //unsubResponseCallback(this.REJECTED);
             });
         }
     }
