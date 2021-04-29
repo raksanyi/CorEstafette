@@ -46,8 +46,8 @@ document.getElementById("subscribeButton").addEventListener("click", function ()
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
     let result = comm.subscribeAsync(topic, onReceive);
     result.then((res) => {
-        //const messageReceived: IResponse = <IResponse>res;
-        //console.log(messageReceived);
+        const messageReceived: IResponse = <IResponse>res;
+        console.log(messageReceived);
         let li = document.createElement("li");
         li.textContent = "subscription success";
         document.getElementById("messagesList").appendChild(li);

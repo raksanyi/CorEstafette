@@ -3,6 +3,7 @@ import { Guid } from "guid-typescript";
 import { Message } from "./message";
 import { IMessage } from "./IMessage";
 import { ICommunicator } from "./ICommunicator";
+import { Response } from "./Response";
 import { IResponse } from "./IResponse";
 
 
@@ -33,34 +34,19 @@ export class Communicator implements ICommunicator {
     private callbacksByTopics: Map<string, (topic: string, message: string)=> any>;
     private responseByCorrelationIds: Map<string, (statusCode: number) => any>;
 
+    /*
     //status code
     SUCCEEDED = 0;
     REJECTED = 1;
     DUPLICATE_SUB = 2;
     DUPLICATE_UNSUB = 3;
+    */
 
     constructor() {
         this.connectionWrapper.establishConnection("https://localhost:5001/testhub");
         this.callbacksByTopics = new Map();
-      
-
-    //    //New code for receiving message
-    //    this.connectionWrapper.registerCallback("ReceiveMessage", (objectReceived: IMessage) => {   
-    //        console.log("inside receiveHandler");
-    //        console.log("objectReceived" + objectReceived);
-    //        const messageReceived: IMessage = <IMessage>objectReceived;
-     
-    //        let topicReceived = messageReceived.topic;
-    //        console.log("topicReceived:" + topicReceived);
-
-    //        let topicCallback = this.callbacksByTopics.get(topicReceived);
-    //        console.log("get callback:" + topicCallback);
-
-    //        topicCallback(messageReceived.sender, messageReceived.content);
-    //    });
-    //}
-
         this.responseByCorrelationIds = new Map();
+
         this.connectionWrapper.registerCallback("onPublish", (objectReceived: IMessage) => {
             console.log("inside receiveHandler");//test
             console.log(this.callbacksByTopics);//test
@@ -68,7 +54,7 @@ export class Communicator implements ICommunicator {
 
             let topicCallback = this.callbacksByTopics.get(messageReceived.topic);
             topicCallback(messageReceived.topic, messageReceived.content);//invoke callback
-            //TODO: does callback have more parameters
+            //TODO: does callback have more parameters?
         });
     }
 
@@ -86,16 +72,37 @@ export class Communicator implements ICommunicator {
     async subscribeAsync(topic: string, topicCallback: (topic: string, message: string) => any): Promise<IResponse>{
         console.log("Client called subscribe method");
 
-        if (this.callbacksByTopics.has(topic)) {
+        if (this.callbacksByTopics.has(topic)) {//cannot subscribe twice
+
+            let duplicateSubResponse = new Response("", "", "user1", topic, false);
             return new Promise<IResponse>((resolve, reject) => {
-                reject("You have subscribed to this topic");
+                reject(duplicateSubResponse);
             });
+
         } else {
+
             let correlationID = Guid.create().toString();
             let messageToSend = new Message(correlationID, "", "user1", topic);
-            let result = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", messageToSend);
-            console.log(result);//test
+            let serviceTask = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", messageToSend);
+            //set timeout
+            let timeoutResponse = new Response(correlationID, "", "user1", topic, false);
+            let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
+            //wait for one of the tasks to settle
+            let taskResult = await Promise.race([serviceTask, timeoutTask]);
+            if (taskResult.success === true) {
+                //add callback function to the dictionary
+                console.log("sub success");//test
+                this.callbacksByTopics.set(topic, topicCallback);
+                console.log(this.callbacksByTopics);//test
+            }
+            //test
+            console.log("print the promise and response:");
+            console.log(serviceTask);
+            console.log(timeoutTask);
+            console.log(taskResult);
 
+            return taskResult;
+            /*
             result.then(() => {
                 console.log("sub success");//test
                 //add callback function to the dictionary
@@ -112,6 +119,7 @@ export class Communicator implements ICommunicator {
                 });
                 //subResponseCallback(this.REJECTED);
             });
+            */
         }
 
     }
@@ -120,12 +128,37 @@ export class Communicator implements ICommunicator {
         console.log("Client called unsubscribe method");
 
         if (!this.callbacksByTopics.has(topic)) {
-            return new Promise<IResponse>((resolve, reject) => {
-                reject("You need to subscribe first before unsubscribing");
-            });
-            //unsubResponseCallback(this.DUPLICATE_UNSUB);
-        } else {
 
+            let duplicateUnsubResponse = new Response("", "you need to subscribe before unsubscribing", "user1", topic, false);
+            return new Promise<IResponse>((resolve, reject) => {
+                reject(duplicateUnsubResponse);
+            });
+
+        } else {
+            let correlationID = Guid.create().toString();
+            let messageToSend = new Message(correlationID, "", "user1", topic);
+            let serviceTask = this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", messageToSend);
+            //set timeout
+            let timeoutResponse = new Response(correlationID, "", "user1", topic, false);
+            let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
+            //wait for one of the tasks to settle
+            let taskResult = await Promise.race([serviceTask, timeoutTask]);
+            
+            if (taskResult.success===true) {
+                console.log("unsub success");//test
+                //remove from dictionary
+                this.callbacksByTopics.delete(topic);
+                console.log(this.callbacksByTopics);//test
+            }
+
+            //test
+            console.log(serviceTask);
+            console.log(timeoutTask);
+            console.log(taskResult);
+
+            return taskResult;
+
+            /*
             let correlationID = Guid.create().toString();
             let messageToSend = new Message(correlationID, "", "user1", topic);
             let result = this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", messageToSend);
@@ -146,7 +179,7 @@ export class Communicator implements ICommunicator {
                     reject("Service rejected unsubscription");
                 });
                 //unsubResponseCallback(this.REJECTED);
-            });
+            });*/
         }
     }
 
