@@ -1,4 +1,5 @@
 ﻿import { Communicator } from "./communicator";
+import { IResponse } from "./IResponse";
 
 let comm = new Communicator();
 
@@ -44,7 +45,9 @@ document.getElementById("subscribeButton").addEventListener("click", function ()
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
     let result = comm.subscribeAsync(topic, onReceive);
-    result.then(() => {
+    result.then((res) => {
+        //const messageReceived: IResponse = <IResponse>res;
+        //console.log(messageReceived);
         let li = document.createElement("li");
         li.textContent = "subscription success";
         document.getElementById("messagesList").appendChild(li);
@@ -67,13 +70,26 @@ document.getElementById("unsubscribeButton").addEventListener("click", function 
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
     let result = comm.unsubscribeAsync(topic);
-    result.then(() => {
-        let li = document.createElement("li");
-        li.textContent = "unsubscription success";
-        document.getElementById("messagesList").appendChild(li);
-    }).catch((err: any) => {
-        let li = document.createElement("li");
-        li.textContent = "unsubscription failed";
-        document.getElementById("messagesList").appendChild(li);
-    });
+    //result.then(() => {
+    //    let li = document.createElement("li");
+    //    li.textContent = "unsubscription success";
+    //    document.getElementById("messagesList").appendChild(li);
+    //}).catch((err: any) => {
+    //    let li = document.createElement("li");
+    //    li.textContent = "unsubscription failed";
+    //    document.getElementById("messagesList").appendChild(li);
+    //});
+
+    result.then((res) => {
+            const messageReceived: IResponse = <IResponse>res;
+            console.log(messageReceived);
+            let li = document.createElement("li");
+            li.textContent = "unsubscription success";
+            document.getElementById("messagesList").appendChild(li);
+        }).catch((err: any) => {
+            let li = document.createElement("li");
+            li.textContent = "unsubscription failed";
+            document.getElementById("messagesList").appendChild(li);
+        });
+
 });
