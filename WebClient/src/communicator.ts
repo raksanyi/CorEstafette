@@ -42,7 +42,10 @@ export class Communicator implements ICommunicator {
         this.connectionWrapper.registerCallback("onPublish", (objectReceived: IMessage) => {
             //console.log("inside receiveHandler");//test
             //console.log(this.callbacksByTopics);//test
+
             const messageReceived: IMessage = <IMessage>objectReceived;
+
+            //console.log(messageReceived);
 
             let topicCallback = this.callbacksByTopics.get(messageReceived.topic);
             topicCallback(messageReceived.topic, messageReceived.content);//invoke callback
