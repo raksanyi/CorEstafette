@@ -31,13 +31,11 @@ export class Communicator implements ICommunicator {
 
     }
 
-    private callbacksByTopics: Map<string, (topic: string, message: string)=> any>;
-    private responseByCorrelationIds: Map<string, (statusCode: number) => any>;
+    private callbacksByTopics: Map<string, (message: IMessage)=> any>;
 
     constructor() {
         this.connectionWrapper.establishConnection("https://localhost:5001/testhub");
         this.callbacksByTopics = new Map();
-        this.responseByCorrelationIds = new Map();
 
         this.connectionWrapper.registerCallback("onPublish", (objectReceived: IMessage) => {
             //console.log("inside receiveHandler");//test
@@ -45,7 +43,7 @@ export class Communicator implements ICommunicator {
             const messageReceived: IMessage = <IMessage>objectReceived;
 
             let topicCallback = this.callbacksByTopics.get(messageReceived.topic);
-            topicCallback(messageReceived.topic, messageReceived.content);//invoke callback
+            topicCallback(messageReceived);//invoke callback
             //TODO: does callback have more parameters?
         });
     }
@@ -60,7 +58,7 @@ export class Communicator implements ICommunicator {
     }
 
 
-    async subscribeAsync(topic: string, topicCallback: (topic: string, message: string) => any): Promise<IResponse>{
+    async subscribeAsync(topic: string, topicCallback: (message: IMessage) => any): Promise<IResponse>{
         console.log("Client called subscribe method");//test
 
         if (this.callbacksByTopics.has(topic)) {//cannot subscribe twice

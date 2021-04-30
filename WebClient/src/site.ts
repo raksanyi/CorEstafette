@@ -1,13 +1,14 @@
 ﻿import { Communicator } from "./communicator";
 import { IResponse } from "./IResponse";
+import { IMessage } from "./IMessage";
 
 let comm = new Communicator();
 
 //callback for receiving messages
-let onReceive = function (topic: string, message: string) {
+let onReceive = function (message: IMessage) {
     console.log("onReceive called in site.ts");
-    let msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    let encodedMsg = msg + " under topic " + topic;
+    let msg = message.content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let encodedMsg = msg + " under topic " + message.topic;
     let li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
