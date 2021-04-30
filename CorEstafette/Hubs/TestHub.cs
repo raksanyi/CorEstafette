@@ -11,40 +11,37 @@ namespace CorEstafette.Hubs
 
     public class Message
     {
-        public string CorrelationId { get; set; }
-        public string Content { get; set; }
-        public string Sender { get; set; }
-        public string Topic { get; set; }
-        public DateTime Timestamp { get; set; }
+        public string correlationId { get; set; }
+        public string content { get; set; }
+        public string sender { get; set; }
+        public string topic { get; set; }
     }
 
     public class Response
     {
         public Response(Message message, bool success)
         {
-            this.CorrelationId = message.CorrelationId;
-            this.Content = message.Content;
-            this.Sender = message.Sender;
-            this.Topic = message.Topic;
-            this.Success = success;
+            this.correlationId = message.correlationId;
+            this.content = message.content;
+            this.sender = message.sender;
+            this.topic = message.topic;
+            this.success = success;
         }
 
         public Response(string correlationId, string content, string sender, string topic, bool success)
         {
-            this.CorrelationId = correlationId;
-            this.Content = content;
-            this.Sender = sender;
-            this.Topic = topic;
-            this.Timestamp = new DateTime();
-            this.Success = success;
+            this.correlationId = correlationId;
+            this.content = content;
+            this.sender = sender;
+            this.topic = topic;
+            this.success = success;
         }
 
-        public string CorrelationId { get; set; }
-        public string Content { get; set; }
-        public string Sender { get; set; }
-        public string Topic { get; set; }
-        public DateTime Timestamp { get; set; }
-        public bool Success { get; set; }
+        public string correlationId { get; set; }
+        public string content { get; set; }
+        public string sender { get; set; }
+        public string topic { get; set; }
+        public bool success { get; set; }
 
     }
 
@@ -52,14 +49,15 @@ namespace CorEstafette.Hubs
     {
         public async Task PublishAsync(Message message)
         {
-            await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message);
+            
+            await Clients.GroupExcept(message.topic, Context.ConnectionId).SendAsync("OnPublish", message);
         }
 
         public async Task<Response> SubscribeTopicAsync(Message message)
         {
             //Test for timeout in communicator
             //System.Threading.Thread.Sleep(4000);
-            await Groups.AddToGroupAsync(Context.ConnectionId, message.Topic);
+            await Groups.AddToGroupAsync(Context.ConnectionId, message.topic);
             var responseToSend = new Response(message, true);
             await Clients.Caller.SendAsync("OnSubscribe", responseToSend);
             return responseToSend;
@@ -67,7 +65,7 @@ namespace CorEstafette.Hubs
 
         public async Task<Response> UnsubscribeTopicAsync(Message message)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, message.Topic);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, message.topic);
             var responseToSend = new Response(message, true);
             await Clients.Caller.SendAsync("OnUnsubscribe", responseToSend);
             return responseToSend;
