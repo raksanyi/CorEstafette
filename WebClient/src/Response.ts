@@ -1,39 +1,40 @@
 ﻿import { IResponse } from "./IResponse";
 
 export class Response implements IResponse {
-    private _correlationId: string;
-    private _content: string;
-    private _sender: string;
-    private _topic: string;
-    private _timeStamp: Date;
-    private _success: boolean;
+    private correlationId: string;
+    private content: string;
+    private sender: string;
+    private topic: string;
+    private timeStamp: Date;
+    private success: boolean;
 
     constructor(id: string, content: string, sender: string, topic: string, success: boolean) {
-        this._correlationId = id;
-        this._content = content;
-        this._sender = sender;
-        this._topic = topic;
-        this._timeStamp = new Date();
-        this._success = success;
+        this.correlationId = id;
+        this.content = content;
+        this.sender = sender;
+        this.topic = topic;
+        this.timeStamp = new Date();
+        this.success = success;
     }
 
-    get topic() { return this._topic; }
-    set topic(value: string) { this._topic = value; }
+    public get Topic() { return this.topic; }
+    public set Topic(value: string) { this.topic = value; }
 
-    get correlationId() { return this._correlationId; }
-    set correlationId(value: string) { this._correlationId = value; }
+    get CorrelationId() { return this.correlationId; }
+    set CorrelationId(value: string) { this.correlationId = value; }
 
-    get sender() { return this._sender; }
-    set sender(value: string) { this._sender = value; }
+    get Sender() { return this.sender; }
+    set Sender(value: string) { this.sender = value; }
 
-    get content() { return this._content; }
-    set content(value: string) { this._content = value; }
+    get Content() { return this.content; }
+    set Content(value: string) { this.content = value; }
 
-    get timeStamp() { return this._timeStamp; }
-    set timeStamp(value: Date) { this._timeStamp = value; }
+    get TimeStamp() { return this.timeStamp; }
+    set TimeStamp(value: Date) { this.timeStamp = value; }
 
-    get success() { return this._success; }
-    set success(value: boolean) { this._success = value; }
+
+    get Success() { return this.success; }
+    set Success(value: boolean) { this.success = value; }
 
 
 

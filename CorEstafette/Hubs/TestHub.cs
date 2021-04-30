@@ -8,51 +8,56 @@ using Newtonsoft.Json;
 //Hub manages connection, group, messaging
 namespace CorEstafette.Hubs
 {
-
+    [Serializable]
     public class Message
     {
+        [JsonProperty]
         public string CorrelationId { get; set; }
+        [JsonProperty]
         public string Content { get; set; }
+        [JsonProperty]
         public string Sender { get; set; }
+        [JsonProperty]
         public string Topic { get; set; }
-        public DateTime Timestamp { get; set; }
+        [JsonProperty]
+        public DateTime TimeStamp { get; set; }
     }
-
+    [Serializable]
     public class Response
     {
+    
+        [JsonProperty]
+        public string CorrelationId { get; set; }
+        [JsonProperty]
+        public string Content { get; set; }
+        [JsonProperty]
+        public string Sender { get; set; }
+        [JsonProperty]
+        public string Topic { get; set; }
+        [JsonProperty]
+        public DateTime TimeStamp { get; set; }
+        [JsonProperty]
+        public bool Success { get; set; }
+
         public Response(Message message, bool success)
         {
             this.CorrelationId = message.CorrelationId;
             this.Content = message.Content;
             this.Sender = message.Sender;
             this.Topic = message.Topic;
+            this.TimeStamp = new DateTime();
             this.Success = success;
         }
-
-        public Response(string correlationId, string content, string sender, string topic, bool success)
-        {
-            this.CorrelationId = correlationId;
-            this.Content = content;
-            this.Sender = sender;
-            this.Topic = topic;
-            this.Timestamp = new DateTime();
-            this.Success = success;
-        }
-
-        public string CorrelationId { get; set; }
-        public string Content { get; set; }
-        public string Sender { get; set; }
-        public string Topic { get; set; }
-        public DateTime Timestamp { get; set; }
-        public bool Success { get; set; }
-
     }
 
     public class TestHub : Hub
     {
         public async Task PublishAsync(Message message)
         {
-            await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message);
+
+            // await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message);
+            System.Diagnostics.Debug.WriteLine(message.Topic);
+            await Clients.Group(message.Topic).SendAsync("OnPublish", message);
         }
 
         public async Task<Response> SubscribeTopicAsync(Message message)

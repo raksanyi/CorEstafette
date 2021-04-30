@@ -39,27 +39,28 @@ export class Communicator implements ICommunicator {
         this.callbacksByTopics = new Map();
         this.responseByCorrelationIds = new Map();
 
-        this.connectionWrapper.registerCallback("onPublish", (objectReceived: IMessage) => {
-            //console.log("inside receiveHandler");//test
-            //console.log(this.callbacksByTopics);//test
+        this.connectionWrapper.registerCallback("onPublish", (messageReceived: IMessage) => {
+            console.log("inside receiveHandler");//test
+            console.log(this.callbacksByTopics);//test
+            //console.log(objectReceived.Topic);
+            ////const messageReceived: IMessage = <IMessage>objectReceived;
+            //let messageReceived = new Message(objectReceived.CorrelationId, objectReceived.Content, objectReceived.Sender, objectReceived.Topic, objectReceived.TimeStamp);
 
-            const messageReceived: IMessage = <IMessage>objectReceived;
+            console.log(messageReceived);
 
-            //console.log(messageReceived);
-
-            let topicCallback = this.callbacksByTopics.get(messageReceived.topic);
-            topicCallback(messageReceived.topic, messageReceived.content);//invoke callback
+            let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
+            topicCallback(messageReceived.Topic, messageReceived.Content);//invoke callback
             //TODO: does callback have more parameters?
         });
     }
 
     //publish message under certain topic
-    publish(topic: string, message: string) {
+    async publish(topic: string, message: string) {
         console.log("Client called publish method");//test
         let correlationID = Guid.create().toString();
         let messageToSend = new Message(correlationID, message, "user1", topic);
         console.log(messageToSend)
-        this.connectionWrapper.connection.invoke("PublishAsync", messageToSend);
+        await this.connectionWrapper.connection.invoke("PublishAsync", messageToSend);
     }
 
 
@@ -77,6 +78,7 @@ export class Communicator implements ICommunicator {
 
             let correlationID = Guid.create().toString();
             let messageToSend = new Message(correlationID, "", "user1", topic);
+            console.log(messageToSend);
             let serviceTask = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", messageToSend);
             //set timeout
             let timeoutResponse = new Response(correlationID, "", "user1", topic, false);
