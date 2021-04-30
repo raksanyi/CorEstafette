@@ -37,24 +37,30 @@ export class Communicator implements ICommunicator {
         this.connectionWrapper.establishConnection("https://localhost:5001/testhub");
         this.callbacksByTopics = new Map();
 
-        this.connectionWrapper.registerCallback("onPublish", (objectReceived: IMessage) => {
-            //console.log("inside receiveHandler");//test
-            //console.log(this.callbacksByTopics);//test
-            const messageReceived: IMessage = <IMessage>objectReceived;
 
-            let topicCallback = this.callbacksByTopics.get(messageReceived.topic);
+        this.connectionWrapper.registerCallback("onPublish", (messageReceived: IMessage) => {
+            console.log("inside receiveHandler");//test
+            //console.log(this.callbacksByTopics);//test
+            //console.log(objectReceived.Topic);
+            ////const messageReceived: IMessage = <IMessage>objectReceived;
+            //let messageReceived = new Message(objectReceived.CorrelationId, objectReceived.Content, objectReceived.Sender, objectReceived.Topic, objectReceived.TimeStamp);
+
+            console.log(messageReceived.Topic);
+
+            let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
             topicCallback(messageReceived);//invoke callback
+
             //TODO: does callback have more parameters?
         });
     }
 
     //publish message under certain topic
-    publish(topic: string, message: string) {
+    async publish(topic: string, message: string) {
         console.log("Client called publish method");//test
         let correlationID = Guid.create().toString();
         let messageToSend = new Message(correlationID, message, "user1", topic);
         console.log(messageToSend)
-        this.connectionWrapper.connection.invoke("PublishAsync", messageToSend);
+        await this.connectionWrapper.connection.invoke("PublishAsync", messageToSend);
     }
 
 
@@ -72,6 +78,7 @@ export class Communicator implements ICommunicator {
 
             let correlationID = Guid.create().toString();
             let messageToSend = new Message(correlationID, "", "user1", topic);
+            console.log(messageToSend);
             let serviceTask = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", messageToSend);
             //set timeout
             let timeoutResponse = new Response(correlationID, "", "user1", topic, false);

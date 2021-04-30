@@ -27,8 +27,11 @@ namespace CorEstafette
         {
             services.AddRazorPages();
             services.AddCors();
-            services.AddSignalR();//configure signalR hubs
-        }
+            services.AddSignalR().AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = null;//configure signalR hubs
+            });
+         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
