@@ -1,8 +1,9 @@
 ﻿export interface IMessage {
-    correlationId: string;
-    content: string;
-    sender: string;
-    topic: string;
+    topic : string;
+    content : string;
+    sender : string ;
+    correlationId : string;
+    timeStamp : Date;
 }
 
   
