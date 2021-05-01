@@ -44,10 +44,10 @@ export class Communicator implements ICommunicator {
             //console.log(objectReceived.Topic);
             ////const messageReceived: IMessage = <IMessage>objectReceived;
             //let messageReceived = new Message(objectReceived.CorrelationId, objectReceived.Content, objectReceived.Sender, objectReceived.Topic, objectReceived.TimeStamp);
-
-            console.log(messageReceived.Topic);
+            console.log(messageReceived);
 
             let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
+            console.log("here");
             topicCallback(messageReceived);//invoke callback
 
             //TODO: does callback have more parameters?
