@@ -4,17 +4,18 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace Shared
+namespace SignalRCommunicator
 {
     internal class Communicator :ICommunicator
     {
         private readonly HubConnection connection;
         private readonly Dictionary<string, Func<string, Task>> callBackTopics;
-
+        private readonly string UserId;
+        
         public Communicator()
         {
             callBackTopics = new Dictionary<string, Func<string, Task>>();
-
+            UserId = "User" + new Random().Next(1, 50);
             connection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:44392/testhub")
                 .Build();
@@ -26,49 +27,69 @@ namespace Shared
                 await connection.StartAsync();
             };
 
-            connection.On<string>(nameof(OnSubscribe), OnSubscribe);
-            connection.On<string>(nameof(OnUnsubscribe), OnUnsubscribe);
+            //connection.On<IResponse>(nameof(OnSubscribe), OnSubscribe);
+            //connection.On<string>(nameof(OnUnsubscribe), OnUnsubscribe);
             connection.On<string, string>(nameof(OnPublish), OnPublish);
         }
 
-        private void OnSubscribe(string response)
-        {
-            Debug.WriteLine(response);
-        }
-
-        private void OnUnsubscribe(string response)
-        {
-            Debug.WriteLine(response);
-        }
-
-        private async Task OnPublish(string topic, string content)
+         private async Task OnPublish(string topic, string content)
         {
             await callBackTopics[topic](content);
         }
-        public async Task<string> SubscribeAsync(string topic, Func<string, Task> callBack)
+        public async Task<Response> SubscribeAsync(string topic, Func<string, Task> callBack)
         {
             if (callBackTopics.ContainsKey(topic))
-                return "fail";
-            await connection.InvokeAsync("SubscribeTopicAsync", topic);
-            if (callBack == null)
                 return null;
+            
+            Message message = new Message(topic, null, UserId);
+            Task<Response> subscribeTask = connection.InvokeAsync<Response>("SubscribeTopicAsync", message);
+            Response response = await subscribeTask;
+            var timeOutTask = Task.Delay(2000);
+            await timeOutTask;
+            var completed = Task.WhenAny(subscribeTask, timeOutTask);
+
+            if (completed.Result != subscribeTask)
+                return new Response(topic,
+                    $"Subscription to topic {message.Topic} failed du to a Timeout error.",
+                    false);
+                        
             callBackTopics[topic] = callBack;
-            return "success";
+            return response;
         }
 
-        public async Task<string> UnsubscribeAsync(string topic)
+        public async Task<Response> UnsubscribeAsync(string topic)
         {
             if (!callBackTopics.ContainsKey(topic))
-                return "fail";
+                return new Response(topic,
+                    $"Can't unsubscribe from {topic} since it wasn't subscribed to", 
+                    false);
 
-            await connection.InvokeAsync("UnsubscribeTopicAsync", topic);
+            Message message = new Message(topic, null, UserId);
+            Task<Response> unsubscribeTask = connection.InvokeAsync<Response>("UnsubscribeTopicAsync", message);
+            Response response = await unsubscribeTask;
+            var timeOutTask = Task.Delay(2000);
+            await timeOutTask;
+
+            var completed = Task.WhenAny(unsubscribeTask, timeOutTask);
+
+            if (completed.Result != unsubscribeTask)
+                return new Response(topic,
+                    $"Unsubscription from topic {topic} failed du to a timeout error.",
+                    false);
+
             callBackTopics.Remove(topic);
-            return "success";
+            return response;
         }
 
-        public async Task PublishAsync(String topic, String message)
+        /*public async Task PublishAsync(String topic, String content)
         {
-            await connection.InvokeAsync("PublishAsync", topic, message);
+            //IMessage message = new Message(topic, content);
+            await connection.InvokeAsync("PublishAsync", topic, content );
+        }*/
+        public async Task PublishAsync(string topic, string content)
+        {
+            IMessage message = new Message(topic, content, UserId);
+            await connection.InvokeAsync("PublishAsync", message);
         }
     }
 }

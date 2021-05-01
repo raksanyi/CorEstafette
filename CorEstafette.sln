@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPFClient", "WPFClient\WPFC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebClient", "WebClient\WebClient.csproj", "{1B1EEC10-7DF8-484C-9571-F294592DD05B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{1F4D49A6-3246-47F1-A0EC-B282B6CC3D20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRCommunicator", "Shared\SignalRCommunicator.csproj", "{1F4D49A6-3246-47F1-A0EC-B282B6CC3D20}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Shared
+namespace SignalRCommunicator
 {
     public interface ICommunicator
     {
@@ -11,14 +11,14 @@ namespace Shared
         /// <param name="topic">The name of the topic to be subscribed to</param>
         /// <param name="callBack">Handles the response</param>
         /// <returns></returns>
-        Task<string> SubscribeAsync(string topic, Func<string, Task> callBack);
+        Task<Response> SubscribeAsync(string topic, Func<string, Task> callBack);
 
         /// <summary>
         /// Unsuscribe for a topic to stop receiving the messages from this topic
         /// </summary>
         /// <param name="topic">The name of the topic to unsubscribe from</param>
         /// <returns></returns>
-        Task<string> UnsubscribeAsync(string topic);
+        Task<Response> UnsubscribeAsync(string topic);
 
         /// <summary>
         /// 

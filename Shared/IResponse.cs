@@ -1,4 +1,4 @@
-﻿namespace Shared
+﻿namespace SignalRCommunicator
 {
     public interface IResponse : IMessage
     {

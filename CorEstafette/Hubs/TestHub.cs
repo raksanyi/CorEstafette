@@ -1,29 +1,37 @@
 ﻿using System;
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
+using SignalRCommunicator;
 
 //Hub manages connection, group, messaging
 namespace CorEstafette.Hubs
 {
     public class TestHub : Hub
     {
-        public async Task PublishAsync(string topic, string content)
+        /*public async Task PublishAsync(string topic, string content)
         {
             await Clients.GroupExcept(topic, Context.ConnectionId).SendAsync("OnPublish", topic, content);
+        }*/
+        public async Task PublishAsync(Message message)
+        {
+            await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message.Topic, message.Content);
         }
 
         //method for client to subscribe for a topic
-        public async Task SubscribeTopicAsync(string topic)
+        public async Task<Response> SubscribeTopicAsync(Message message)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, topic);
-            await Clients.Caller.SendAsync("OnSubscribe", $"Successfully subscribed to topic {topic}");
+            await Groups.AddToGroupAsync(Context.ConnectionId, message.Topic);
+            message.Content = $"{message.Sender} successfully subscribed to topic {message.Topic}";
+            return new Response(message, true);
         }
 
         //method for client to unsubscribe from a topic
-        public async Task UnsubscribeTopicAsync(string topic)
+        public async Task<Response> UnsubscribeTopicAsync(Message message)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, topic);
-            await Clients.Caller.SendAsync("OnUnsubscribe", $"Successfully unsubscribed fron topic {topic}");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, message.Topic);
+            message.Content = $"{message.Sender} successfully unsubscribe from topic {message.Topic}";
+            return new Response(message, true);
+            //await Clients.Caller.SendAsync("OnUnsubscribe", $"Successfully unsubscribed fron topic {topic}");
         }
     }
 }
