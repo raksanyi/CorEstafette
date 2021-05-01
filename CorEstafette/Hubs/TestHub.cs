@@ -58,8 +58,8 @@ namespace CorEstafette.Hubs
     {
         public async Task PublishAsync(Message message)
         {
-            // await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message);
-            await Clients.Group(message.Topic).SendAsync("OnPublish", message);
+            await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message);
+            //await Clients.Group(message.Topic).SendAsync("OnPublish", message);
         }
 
         public async Task<Response> SubscribeTopicAsync(Message message)

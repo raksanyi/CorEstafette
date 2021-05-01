@@ -47,7 +47,7 @@ export class Communicator implements ICommunicator {
             console.log(messageReceived);
 
             let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
-            console.log("here");
+            //console.log(topicCallback);
             topicCallback(messageReceived);//invoke callback
 
             //TODO: does callback have more parameters?
@@ -55,12 +55,12 @@ export class Communicator implements ICommunicator {
     }
 
     //publish message under certain topic
-    async publish(topic: string, message: string) {
+    publish(topic: string, message: string) {
         console.log("Client called publish method");//test
         let correlationID = Guid.create().toString();
         let messageToSend = new Message(correlationID, message, "user1", topic);
         console.log(messageToSend)
-        await this.connectionWrapper.connection.invoke("PublishAsync", messageToSend);
+        this.connectionWrapper.connection.invoke("PublishAsync", messageToSend);
     }
 
 
@@ -85,7 +85,7 @@ export class Communicator implements ICommunicator {
             let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
             //wait for one of the tasks to settle
             let taskResult = await Promise.race([serviceTask, timeoutTask]);
-            if (taskResult.success === true) {
+            if (taskResult.Success === true) {
                 //add callback function to the dictionary
                 console.log("sub success");//test
                 this.callbacksByTopics.set(topic, topicCallback);
@@ -122,7 +122,7 @@ export class Communicator implements ICommunicator {
             //wait for one of the tasks to settle
             let taskResult = await Promise.race([serviceTask, timeoutTask]);
             
-            if (taskResult.success===true) {
+            if (taskResult.Success===true) {
                 console.log("unsub success");//test
                 //remove from dictionary
                 this.callbacksByTopics.delete(topic);
