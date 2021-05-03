@@ -6,7 +6,6 @@ using Prism.Commands;
 using System.Threading.Tasks;
 using SignalRCommunicator;
 using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace WPFClient
 {
@@ -57,7 +56,6 @@ namespace WPFClient
                     OnPropertyChanged(nameof(Messages));
                     return;
                 }
-                //Messages = $"Unsubscription to topic {UnsubscribeTopic} was {(response.Equals("success") ? "successful" : "unsuccessful")}{Environment.NewLine}{Messages}";
                 Messages = response.Content + Environment.NewLine + Messages;
                 OnPropertyChanged(nameof(Messages));
             });

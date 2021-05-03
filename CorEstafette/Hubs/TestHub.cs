@@ -8,13 +8,9 @@ namespace CorEstafette.Hubs
 {
     public class TestHub : Hub
     {
-        /*public async Task PublishAsync(string topic, string content)
-        {
-            await Clients.GroupExcept(topic, Context.ConnectionId).SendAsync("OnPublish", topic, content);
-        }*/
         public async Task PublishAsync(Message message)
         {
-            await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message.Topic, message.Content);
+            await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message);
         }
 
         //method for client to subscribe for a topic
@@ -31,7 +27,6 @@ namespace CorEstafette.Hubs
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, message.Topic);
             message.Content = $"{message.Sender} successfully unsubscribe from topic {message.Topic}";
             return new Response(message, true);
-            //await Clients.Caller.SendAsync("OnUnsubscribe", $"Successfully unsubscribed fron topic {topic}");
         }
     }
 }

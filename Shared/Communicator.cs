@@ -27,15 +27,14 @@ namespace SignalRCommunicator
                 await connection.StartAsync();
             };
 
-            //connection.On<IResponse>(nameof(OnSubscribe), OnSubscribe);
-            //connection.On<string>(nameof(OnUnsubscribe), OnUnsubscribe);
-            connection.On<string, string>(nameof(OnPublish), OnPublish);
+            connection.On<Message>(nameof(OnPublish), OnPublish);
         }
 
-         private async Task OnPublish(string topic, string content)
+        private async Task OnPublish(Message message)
         {
-            await callBackTopics[topic](content);
+            await callBackTopics[message.Topic]($"{message.Sender} published : {message.Content} on topic {message.Topic}");
         }
+        
         public async Task<Response> SubscribeAsync(string topic, Func<string, Task> callBack)
         {
             if (callBackTopics.ContainsKey(topic))
@@ -81,11 +80,6 @@ namespace SignalRCommunicator
             return response;
         }
 
-        /*public async Task PublishAsync(String topic, String content)
-        {
-            //IMessage message = new Message(topic, content);
-            await connection.InvokeAsync("PublishAsync", topic, content );
-        }*/
         public async Task PublishAsync(string topic, string content)
         {
             IMessage message = new Message(topic, content, UserId);
