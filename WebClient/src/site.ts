@@ -60,3 +60,15 @@ document.getElementById("unsubscribeButton").addEventListener("click", function 
         });
 
 });
+
+document.getElementById("requestButton").addEventListener("click", function(){
+    let user = (<HTMLInputElement>document.getElementById("userInput")).value;
+    let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
+    let message = (<HTMLInputElement>document.getElementById("messageInput")).value;
+    let additionalData = (<HTMLInputElement>document.getElementById("additionalDataInput")).value;
+    let responder = (<HTMLInputElement>document.getElementById("responderInput")).value;
+
+    comm.queryAsync(responder, additionalData);
+
+
+})
