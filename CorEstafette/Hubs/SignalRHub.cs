@@ -54,7 +54,7 @@ namespace CorEstafette.Hubs
 
     }
 
-    public class TestHub : Hub
+    public class SignalRHub : Hub
     {
         public async Task PublishAsync(Message message)
         {

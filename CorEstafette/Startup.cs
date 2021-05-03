@@ -74,7 +74,7 @@ namespace CorEstafette
             {
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
-                endpoints.MapHub<TestHub>("/testhub"); //for testing purpose
+                endpoints.MapHub<SignalRHub>("/testhub"); //for testing purpose
             });
         }
     }
