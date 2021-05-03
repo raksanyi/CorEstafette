@@ -11,14 +11,14 @@ namespace SignalRCommunicator
         /// <param name="topic">The name of the topic to be subscribed to</param>
         /// <param name="callBack">Handles the response</param>
         /// <returns></returns>
-        Task<Response> SubscribeAsync(string topic, Func<string, Task> callBack);
+        Task<IResponse> SubscribeAsync(string topic, Func<string, Task> callBack);
 
         /// <summary>
         /// Unsuscribe for a topic to stop receiving the messages from this topic
         /// </summary>
         /// <param name="topic">The name of the topic to unsubscribe from</param>
         /// <returns></returns>
-        Task<Response> UnsubscribeAsync(string topic);
+        Task<IResponse> UnsubscribeAsync(string topic);
 
         /// <summary>
         /// 
