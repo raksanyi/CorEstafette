@@ -34,7 +34,7 @@ export class Communicator implements ICommunicator {
     private callbacksByTopics: Map<string, (message: IMessage)=> any>;
 
     constructor() {
-        this.connectionWrapper.establishConnection("https://localhost:5001/testhub");
+        this.connectionWrapper.establishConnection("https://localhost:5001/signalRhub");
         this.callbacksByTopics = new Map();
 
 
