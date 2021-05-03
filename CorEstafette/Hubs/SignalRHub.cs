@@ -9,7 +9,7 @@ namespace CorEstafette.Hubs
     {
         public async Task PublishAsync(Message message)
         {
-            await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message);
+            await Clients.OthersInGroup(message.Topic).SendAsync("OnPublish", message);
         }
 
         //method for client to subscribe for a topic
