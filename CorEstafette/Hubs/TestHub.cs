@@ -8,40 +8,49 @@ using Newtonsoft.Json;
 //Hub manages connection, group, messaging
 namespace CorEstafette.Hubs
 {
-
+    [Serializable]
     public class Message
     {
-        public string correlationId { get; set; }
-        public string content { get; set; }
-        public string sender { get; set; }
-        public string topic { get; set; }
-    }
 
+        [JsonProperty]
+        public string CorrelationId { get; set; }
+        [JsonProperty]
+        public string Content { get; set; }
+        [JsonProperty]
+        public string Sender { get; set; }
+        [JsonProperty]
+        public string Topic { get; set; }
+        [JsonProperty]
+        public DateTime TimeStamp { get; set; }
+
+    }
+    [Serializable]
     public class Response
     {
+    
+        [JsonProperty]
+        public string CorrelationId { get; set; }
+        [JsonProperty]
+        public string Content { get; set; }
+        [JsonProperty]
+        public string Sender { get; set; }
+        [JsonProperty]
+        public string Topic { get; set; }
+        [JsonProperty]
+        public DateTime TimeStamp { get; set; }
+        [JsonProperty]
+        public bool Success { get; set; }
+
         public Response(Message message, bool success)
         {
-            this.correlationId = message.correlationId;
-            this.content = message.content;
-            this.sender = message.sender;
-            this.topic = message.topic;
-            this.success = success;
-        }
 
-        public Response(string correlationId, string content, string sender, string topic, bool success)
-        {
-            this.correlationId = correlationId;
-            this.content = content;
-            this.sender = sender;
-            this.topic = topic;
-            this.success = success;
+            this.CorrelationId = message.CorrelationId;
+            this.Content = message.Content;
+            this.Sender = message.Sender;
+            this.Topic = message.Topic;
+            this.TimeStamp = new DateTime();
+            this.Success = success;
         }
-
-        public string correlationId { get; set; }
-        public string content { get; set; }
-        public string sender { get; set; }
-        public string topic { get; set; }
-        public bool success { get; set; }
 
     }
 
@@ -49,15 +58,15 @@ namespace CorEstafette.Hubs
     {
         public async Task PublishAsync(Message message)
         {
-            
-            await Clients.GroupExcept(message.topic, Context.ConnectionId).SendAsync("OnPublish", message);
+            await Clients.GroupExcept(message.Topic, Context.ConnectionId).SendAsync("OnPublish", message);
+            //await Clients.Group(message.Topic).SendAsync("OnPublish", message);
         }
 
         public async Task<Response> SubscribeTopicAsync(Message message)
         {
             //Test for timeout in communicator
             //System.Threading.Thread.Sleep(4000);
-            await Groups.AddToGroupAsync(Context.ConnectionId, message.topic);
+            await Groups.AddToGroupAsync(Context.ConnectionId, message.Topic);
             var responseToSend = new Response(message, true);
             await Clients.Caller.SendAsync("OnSubscribe", responseToSend);
             return responseToSend;
@@ -65,7 +74,7 @@ namespace CorEstafette.Hubs
 
         public async Task<Response> UnsubscribeTopicAsync(Message message)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, message.topic);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, message.Topic);
             var responseToSend = new Response(message, true);
             await Clients.Caller.SendAsync("OnUnsubscribe", responseToSend);
             return responseToSend;

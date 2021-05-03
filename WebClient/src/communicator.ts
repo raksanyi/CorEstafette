@@ -37,13 +37,19 @@ export class Communicator implements ICommunicator {
         this.connectionWrapper.establishConnection("https://localhost:5001/testhub");
         this.callbacksByTopics = new Map();
 
-        this.connectionWrapper.registerCallback("onPublish", (objectReceived: IMessage) => {
-            //console.log("inside receiveHandler");//test
-            //console.log(this.callbacksByTopics);//test
-            const messageReceived: IMessage = <IMessage>objectReceived;
 
-            let topicCallback = this.callbacksByTopics.get(messageReceived.topic);
+        this.connectionWrapper.registerCallback("onPublish", (messageReceived: IMessage) => {
+            console.log("inside receiveHandler");//test
+            //console.log(this.callbacksByTopics);//test
+            //console.log(objectReceived.Topic);
+            ////const messageReceived: IMessage = <IMessage>objectReceived;
+            //let messageReceived = new Message(objectReceived.CorrelationId, objectReceived.Content, objectReceived.Sender, objectReceived.Topic, objectReceived.TimeStamp);
+            console.log(messageReceived);
+
+            let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
+            //console.log(topicCallback);
             topicCallback(messageReceived);//invoke callback
+
             //TODO: does callback have more parameters?
         });
     }
@@ -72,13 +78,14 @@ export class Communicator implements ICommunicator {
 
             let correlationID = Guid.create().toString();
             let messageToSend = new Message(correlationID, "", "user1", topic);
+            console.log(messageToSend);
             let serviceTask = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", messageToSend);
             //set timeout
             let timeoutResponse = new Response(correlationID, "", "user1", topic, false);
             let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
             //wait for one of the tasks to settle
             let taskResult = await Promise.race([serviceTask, timeoutTask]);
-            if (taskResult.success === true) {
+            if (taskResult.Success === true) {
                 //add callback function to the dictionary
                 console.log("sub success");//test
                 this.callbacksByTopics.set(topic, topicCallback);
@@ -115,7 +122,7 @@ export class Communicator implements ICommunicator {
             //wait for one of the tasks to settle
             let taskResult = await Promise.race([serviceTask, timeoutTask]);
             
-            if (taskResult.success===true) {
+            if (taskResult.Success===true) {
                 console.log("unsub success");//test
                 //remove from dictionary
                 this.callbacksByTopics.delete(topic);

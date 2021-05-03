@@ -7,8 +7,9 @@ let comm = new Communicator();
 //callback for receiving messages
 let onReceive = function (message: IMessage) {
     console.log("onReceive called in site.ts");
-    let msg = message.content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    let encodedMsg = msg + " under topic " + message.topic;
+    console.log(message);
+    let msg = message.Content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let encodedMsg = msg + " under topic " + message.Topic;
     let li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
