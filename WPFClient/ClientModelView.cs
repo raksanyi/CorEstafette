@@ -4,14 +4,27 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Prism.Commands;
 using System.Threading.Tasks;
-using System.Diagnostics;
+using SignalRCommunicator;
+using Newtonsoft.Json;
 
 namespace WPFClient
 {
+    [Serializable]
+    public class CustomObject
+    {
+        [JsonProperty]
+        public int X { get; set; }
+
+        [JsonProperty]
+        public int Y { get; set; }
+
+        [JsonProperty]
+        public string Value { get; set; }
+    }
     class ClientModelView : INotifyPropertyChanged
     {
-        private Communicator communicator = new Communicator();
-
+        private ICommunicator communicator = new Communicator();
+        
         public ClientModelView() 
         {
             PublishMessage = new DelegateCommand( async () =>
@@ -29,7 +42,7 @@ namespace WPFClient
                     OnPropertyChanged(nameof(Messages));
                     return;
                 }
-                Messages = $"Subscription to topic {SubscribeTopic} was {(response.Equals("success") ? "successful" : "unsuccessful")}{Environment.NewLine}{Messages}";
+                Messages = response.Content + Environment.NewLine + Messages;
                 OnPropertyChanged(nameof(Messages));
 
             });
@@ -43,7 +56,7 @@ namespace WPFClient
                     OnPropertyChanged(nameof(Messages));
                     return;
                 }
-                Messages = $"Unsubscription to topic {UnsubscribeTopic} was {(response.Equals("success") ? "successful" : "unsuccessful")}{Environment.NewLine}{Messages}";
+                Messages = response.Content + Environment.NewLine + Messages;
                 OnPropertyChanged(nameof(Messages));
             });
         }
