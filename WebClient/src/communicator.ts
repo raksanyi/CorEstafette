@@ -13,7 +13,7 @@ export class Communicator implements ICommunicator {
     private connection: any;
     private callbacksByTopics: Map<string, (message: IMessage) => any>;
 
-    //construct and return a timeout promise
+    //construct and return a timeout promise which will reject after 2 seconds
     private timeoutAsync(ms: number = 2000, correlationId : string = "", content : string = "", sender : string = "", topic : string = "") : Promise<IResponse> {
         let timeoutResponse = new Response(correlationId, content, sender, topic, false);
         return new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), ms));
@@ -29,15 +29,16 @@ export class Communicator implements ICommunicator {
         this.connection.off(hubMethod);
     }
 
-    //initialize the connection and start it; throw an exception if connection doesn't success
+    //initialize the connection and start it; throw an exception if connection fails
     private establishConnection(url: string) {
+
         this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
         let startTask = this.connection.start();
         let timeoutTask = this.timeoutAsync();
         let errorMsg = "failed to connect with the hub";
 
         Promise.race([startTask, timeoutTask]).then(
-            (res): IResponse => { return this.connection.invoke("ConnectAsync", this.user); }
+            (res): IResponse => { return this.connection.invoke("ConnectAsync", this.user); }//register the user on the hub
         ).then(
             (res: IResponse) => {
                 console.log(res);
@@ -45,6 +46,7 @@ export class Communicator implements ICommunicator {
                     console.log("successfully registered");
                 } else {
                     errorMsg = "user name already in used";
+                    this.connection.stop();
                     throw errorMsg;
                 }
             }
