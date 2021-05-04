@@ -12,6 +12,7 @@ export class Communicator implements ICommunicator {
     private connection: any;
     private callbacksByTopics: Map<string, (message: IMessage) => any>;
 
+    //construct and return a timeout promise
     private timeoutAsync(ms: number = 2000, correlationId : string = "", content : string = "", sender : string = "", topic : string = "") : Promise<IResponse> {
         let timeoutResponse = new Response(correlationId, content, sender, topic, false);
         return new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), ms));
