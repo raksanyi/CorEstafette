@@ -31,8 +31,9 @@ export class Communicator implements ICommunicator {
     //Question: Sall we make start connection public
     establishConnection(url: string) {
         this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
-        this.connection.start()
-            .then(() => {
+        let startTask = this.connection.start();
+        console.log(startTask);
+        startTask.then(() => {
                 console.log("connected to hub");//How to send response back to the client?
             })
             .catch(() => {
@@ -48,6 +49,10 @@ export class Communicator implements ICommunicator {
         this.registerCallback("onPublish", (messageReceived: IMessage) => {
             let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
             topicCallback(messageReceived);//invoke callback
+        });
+
+        this.registerCallback("onConnect", (response: IResponse) => {
+            console.log(response);//test
         });
 
     }
