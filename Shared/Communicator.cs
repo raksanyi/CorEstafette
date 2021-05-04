@@ -9,11 +9,13 @@ namespace SignalRCommunicator
     {
         private readonly HubConnection connection;
         private readonly Dictionary<string, Func<string, Task>> callBackTopics;
+        private readonly Dictionary<string, Func<IRequest, Object>> callBackByResponder;
         private readonly string UserId;
         
         public Communicator()
         {
             callBackTopics = new Dictionary<string, Func<string, Task>>();
+            callBackByResponder = new Dictionary<string, Func<IRequest, object>>();
             UserId = "User" + new Random().Next(1, 50);
             connection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:44392/signalrhub")
@@ -26,12 +28,18 @@ namespace SignalRCommunicator
                 await connection.StartAsync();
             };
 
-            connection.On<Message>(nameof(OnPublish), OnPublish);
+            ConnectAsync();
+ 
+            connection.On<MessageWithTopic>(nameof(OnPublish), OnPublish);
         }
-
-        private async Task OnPublish(Message message)
+        private async Task OnPublish(MessageWithTopic message)
         {
             await callBackTopics[message.Topic]($"{message.Sender} published : {message.Content} on topic {message.Topic}");
+        }
+
+        private async void ConnectAsync()
+        {
+            var response = await connection.InvokeAsync<Response>("ConnectAsync", UserId);
         }
         
         public async Task<IResponse> SubscribeAsync(string topic, Func<string, Task> callBack)
@@ -39,13 +47,13 @@ namespace SignalRCommunicator
             if (callBackTopics.ContainsKey(topic))
                 return null;
             
-            Message message = new Message(topic, null, UserId);
+            IMessageWithTopic message = new MessageWithTopic(topic, null, UserId);
             Task<Response> subscribeTask = connection.InvokeAsync<Response>("SubscribeTopicAsync", message);
             var timeOutTask = Task.Delay(2000);
             var completed = await Task.WhenAny(subscribeTask, timeOutTask);
 
             if (completed != subscribeTask)
-                return new Response(topic,
+                return new Response(
                     $"Subscription to topic {message.Topic} failed du to a Timeout error.",
                     false);
                         
@@ -60,14 +68,14 @@ namespace SignalRCommunicator
                     $"Can't unsubscribe from {topic} since it wasn't subscribed to", 
                     false);
 
-            Message message = new Message(topic, null, UserId);
+            IMessageWithTopic message = new MessageWithTopic(topic, null, UserId);
             Task<Response> unsubscribeTask = connection.InvokeAsync<Response>("UnsubscribeTopicAsync", message);
             var timeOutTask = Task.Delay(2000);
             
             var completed = await Task.WhenAny(unsubscribeTask, timeOutTask);
 
             if (completed != unsubscribeTask)
-                return new Response(topic,
+                return new Response(
                     $"Unsubscription from topic {topic} failed du to a timeout error.",
                     false);
 
@@ -77,8 +85,13 @@ namespace SignalRCommunicator
 
         public async Task PublishAsync(string topic, string content)
         {
-            IMessage message = new Message(topic, content, UserId);
+            IMessageWithTopic message = new MessageWithTopic(topic, content, UserId);
             await connection.InvokeAsync("PublishAsync", message);
+        }
+
+        public bool AddResponder(string responder, Func<IRequest, Object> callBack)
+        {
+            return callBackByResponder.TryAdd(responder, callBack);
         }
     }
 }
