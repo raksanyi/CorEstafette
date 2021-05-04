@@ -9,42 +9,36 @@ import { IResponse } from "./IResponse";
 
 export class Communicator implements ICommunicator {
 
-    //singlr connection cannot be started in a constructor; use a wrapper to setup connection
-    private connectionWrapper = new class {
+    private connection: any;
+    private callbacksByTopics: Map<string, (message: IMessage) => any>;
 
-        connection: any;
-
-        establishConnection(url: string) {
-            this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
-            this.connection.start()
-                .then(() => {
-                    console.log("connected to hub");//How to send response back to the client?
-                })
-                .catch(() => {
-                    console.log("failed to connect");
-                });
-        }
-
-        //register the handler to the hub method
-        registerCallback(hubMethod: string, handler: Function) {
-            this.connection.on(hubMethod, handler);
-        }
-
-        //deregister all callbacks from the hub method
-        deregisterAllCallbacks(hubMethod: string) {
-            this.connection.off(hubMethod);
-        }
-
+    establishConnection(url: string) {
+        this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
+        this.connection.start()
+            .then(() => {
+                console.log("connected to hub");//How to send response back to the client?
+            })
+            .catch(() => {
+                console.log("failed to connect");
+            });
     }
 
-    private callbacksByTopics: Map<string, (message: IMessage)=> any>;
+    //register the handler to the hub method
+    registerCallback(hubMethod: string, handler: Function) {
+        this.connection.on(hubMethod, handler);
+    }
+
+    //deregister all callbacks from the hub method
+    deregisterAllCallbacks(hubMethod: string) {
+        this.connection.off(hubMethod);
+    }
 
     constructor() {
-        this.connectionWrapper.establishConnection("https://localhost:5001/signalRhub?name=testName");
+        this.establishConnection("https://localhost:5001/signalRhub?name=testName");
         //this.connectionWrapper.establishConnection("https://localhost:5001/signalRhub");
         this.callbacksByTopics = new Map();
 
-        this.connectionWrapper.registerCallback("onPublish", (messageReceived: IMessage) => {
+        this.registerCallback("onPublish", (messageReceived: IMessage) => {
             //console.log(messageReceived);
             let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
             topicCallback(messageReceived);//invoke callback
@@ -58,7 +52,7 @@ export class Communicator implements ICommunicator {
         let correlationID = Guid.create().toString();
         let messageToSend = new Message(correlationID, message, "user1", topic);
         console.log(messageToSend)
-        this.connectionWrapper.connection.invoke("PublishAsync", messageToSend);
+        this.connection.invoke("PublishAsync", messageToSend);
     }
 
 
@@ -77,7 +71,7 @@ export class Communicator implements ICommunicator {
             let correlationID = Guid.create().toString();
             let messageToSend = new Message(correlationID, "", "user1", topic);
             console.log(messageToSend);
-            let serviceTask = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", messageToSend);
+            let serviceTask = this.connection.invoke("SubscribeTopicAsync", messageToSend);
             //set timeout
             let timeoutResponse = new Response(correlationID, "", "user1", topic, false);
             let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
@@ -113,7 +107,7 @@ export class Communicator implements ICommunicator {
         } else {
             let correlationID = Guid.create().toString();
             let messageToSend = new Message(correlationID, "", "user1", topic);
-            let serviceTask = this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", messageToSend);
+            let serviceTask = this.connection.invoke("UnsubscribeTopicAsync", messageToSend);
             //set timeout
             let timeoutResponse = new Response(correlationID, "timeout", "testUser", topic, false);
             let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
@@ -137,7 +131,7 @@ export class Communicator implements ICommunicator {
     }
 
     async disconnectAsync(): Promise<IResponse> {
-        let serviceTask = this.connectionWrapper.connection.stop();
+        let serviceTask = this.connection.stop();
         let timeoutResponse = new Response("", "timeout", "testUser", "", false);
         let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
         let taskResult = await Promise.race([serviceTask, timeoutTask]);
