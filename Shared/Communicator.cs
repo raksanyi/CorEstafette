@@ -30,9 +30,9 @@ namespace SignalRCommunicator
 
             ConnectAsync();
  
-            connection.On<MessageWithTopic>(nameof(OnPublish), OnPublish);
+            connection.On<Message>(nameof(OnPublish), OnPublish);
         }
-        private async Task OnPublish(MessageWithTopic message)
+        private async Task OnPublish(Message message)
         {
             await callBackTopics[message.Topic]($"{message.Sender} published : {message.Content} on topic {message.Topic}");
         }
@@ -47,7 +47,7 @@ namespace SignalRCommunicator
             if (callBackTopics.ContainsKey(topic))
                 return null;
             
-            IMessageWithTopic message = new MessageWithTopic(topic, null, UserId);
+            IMessage message = new Message(topic, null, UserId);
             Task<Response> subscribeTask = connection.InvokeAsync<Response>("SubscribeTopicAsync", message);
             var timeOutTask = Task.Delay(2000);
             var completed = await Task.WhenAny(subscribeTask, timeOutTask);
@@ -68,7 +68,7 @@ namespace SignalRCommunicator
                     $"Can't unsubscribe from {topic} since it wasn't subscribed to", 
                     false);
 
-            IMessageWithTopic message = new MessageWithTopic(topic, null, UserId);
+            IMessage message = new Message(topic, null, UserId);
             Task<Response> unsubscribeTask = connection.InvokeAsync<Response>("UnsubscribeTopicAsync", message);
             var timeOutTask = Task.Delay(2000);
             
@@ -85,7 +85,7 @@ namespace SignalRCommunicator
 
         public async Task PublishAsync(string topic, string content)
         {
-            IMessageWithTopic message = new MessageWithTopic(topic, content, UserId);
+            IMessage message = new Message(topic, content, UserId);
             await connection.InvokeAsync("PublishAsync", message);
         }
 
