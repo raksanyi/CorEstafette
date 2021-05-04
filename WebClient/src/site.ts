@@ -1,6 +1,7 @@
 ﻿import { Communicator } from "./communicator";
 import { IResponse } from "./IResponse";
 import { IMessage } from "./IMessage";
+import { IRequest } from "./IRequest";
 
 let comm = new Communicator();
 
@@ -13,6 +14,17 @@ let onReceive = function (message: IMessage) {
     let li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
+}
+
+let onRequest = function (request: IRequest) {
+    console.log("Received request from");
+    let encodedMsg = "Received request from" + request.Sender;
+    let li = document.createElement("li");
+    li.textContent = encodedMsg;
+    document.getElementById("messagesList").appendChild(li);
+    //return "Send back response";
+    let respondMessage = "send back resposne";
+    comm.respondQueryAsync(request, respondMessage);
 }
 
 document.getElementById("subscribeButton").addEventListener("click", function () {
@@ -68,6 +80,7 @@ document.getElementById("requestButton").addEventListener("click", function(){
     let additionalData = (<HTMLInputElement>document.getElementById("additionalDataInput")).value;
     let responder = (<HTMLInputElement>document.getElementById("responderInput")).value;
 
+    comm.addResponder(responder, onRequest);
     comm.queryAsync(responder, additionalData);
 
 

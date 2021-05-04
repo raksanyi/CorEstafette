@@ -5,6 +5,9 @@ import { IMessage } from "./IMessage";
 import { ICommunicator } from "./ICommunicator";
 import { Response } from "./Response";
 import { IResponse } from "./IResponse";
+import { IRequest } from "./IRequest";
+import { Request } from "./Request";
+
 
 
 export class Communicator implements ICommunicator {
@@ -31,12 +34,15 @@ export class Communicator implements ICommunicator {
 
     }
 
-    private callbacksByTopics: Map<string, (message: IMessage)=> any>;
+    private callbacksByTopics: Map<string, (message: IMessage) => any>;
+    private userId: string;
+    private callbacksByResponder: Map<string, (request: IRequest) => any>;
 
     constructor() {
         this.connectionWrapper.establishConnection("https://localhost:5001/signalRhub");
         this.callbacksByTopics = new Map();
-
+        this.userId = "User" + Math.floor(Math.random() * (100 - 1 + 1)) + 1;
+        console.log(this.userId);
 
         this.connectionWrapper.registerCallback("onPublish", (messageReceived: IMessage) => {
             console.log("inside receiveHandler");//test
@@ -47,18 +53,29 @@ export class Communicator implements ICommunicator {
             console.log(messageReceived);
 
             let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
-            //console.log(topicCallback);
             topicCallback(messageReceived);//invoke callback
 
             //TODO: does callback have more parameters?
-        });
+        })
+
+        this.connectionWrapper.registerCallback("OnQuery", (requestReceived: IRequest) => {
+            console.log(requestReceived);
+
+            let respondCallback = this.callbacksByResponder.get(requestReceived.Destination);
+            
+            respondCallback(requestReceived); //do we get return value from callback
+            //sset a new response with the return message as content
+            //invoke respondQueryAsync in SignalRHub
+        })
     }
+
+
 
     //publish message under certain topic
     publish(topic: string, message: string) {
         console.log("Client called publish method");//test
         let correlationID = Guid.create().toString();
-        let messageToSend = new Message(correlationID, message, "user1", topic);
+        let messageToSend = new Message(correlationID, message, this.userId, topic);
         console.log(messageToSend)
         this.connectionWrapper.connection.invoke("PublishAsync", messageToSend);
     }
@@ -68,8 +85,7 @@ export class Communicator implements ICommunicator {
         console.log("Client called subscribe method");//test
 
         if (this.callbacksByTopics.has(topic)) {//cannot subscribe twice
-
-            let duplicateSubResponse = new Response("", "", "user1", topic, false);
+            let duplicateSubResponse = new Response("", "", this.userId, topic, false);
             return new Promise<IResponse>((resolve, reject) => {
                 reject(duplicateSubResponse);
             });
@@ -77,7 +93,7 @@ export class Communicator implements ICommunicator {
         } else {
 
             let correlationID = Guid.create().toString();
-            let messageToSend = new Message(correlationID, "", "user1", topic);
+            let messageToSend = new Message(correlationID, "", this.userId, topic);
             console.log(messageToSend);
             let serviceTask = this.connectionWrapper.connection.invoke("SubscribeTopicAsync", messageToSend);
             //set timeout
@@ -114,7 +130,7 @@ export class Communicator implements ICommunicator {
 
         } else {
             let correlationID = Guid.create().toString();
-            let messageToSend = new Message(correlationID, "", "user1", topic);
+            let messageToSend = new Message(correlationID, "", this.userId, topic);
             let serviceTask = this.connectionWrapper.connection.invoke("UnsubscribeTopicAsync", messageToSend);
             //set timeout
             let timeoutResponse = new Response(correlationID, "", "user1", topic, false);
@@ -137,4 +153,31 @@ export class Communicator implements ICommunicator {
             return taskResult;
         }
     }
+
+    queryAsync(responder: string, additionalData: string): Promise<IResponse> {
+       // id: string, content: string, sender: string, topic: string, destination: boolean
+        let correlationID = Guid.create().toString();
+        let requestToSend = new Request(correlationID, additionalData, this.userId, "", responder);
+        let serviceTask = this.connectionWrapper.connection.invoke("QueryAsync", requestToSend);
+
+        //let timeoutResponse = new Response(correlationID, "", "user1", "", false);
+        //let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000));
+        //let taskResult = await Promise.race([serviceTask, timeoutTask]);
+        //return taskResult;
+        return serviceTask;
+    }
+
+     //bool AddResponse(string responder, Func<IRequest, object> callback);
+    addResponder(responder : string, respondCallback: (request: IRequest) => any) {
+        if (!this.callbacksByResponder.has(responder)) {
+            this.callbacksByResponder.set(responder, respondCallback);
+            console.log(this.callbacksByResponder);
+        }
+    }
+
+    respondQueryAsync(requestReceived: IRequest, respondMessage: string) {
+        let responseToSend = new Response(requestReceived.CorrelationId, respondMessage, requestReceived.Sender, "", true);
+        this.connectionWrapper.connection.invoke("RespondQueryAysnc", responseToSend);
+    }
+   
 }
