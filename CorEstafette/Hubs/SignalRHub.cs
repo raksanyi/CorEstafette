@@ -11,12 +11,11 @@ namespace CorEstafette.Hubs
     public class SignalRHub : Hub
     {
 
-        Dictionary<string, string> connectedClients = new Dictionary<string, string>();
+        static private Dictionary<string, string> connectedClients = new Dictionary<string, string>();
 
         public override Task OnConnectedAsync()
         {
             var connName = Context.GetHttpContext().Request.Query["name"];
-            
             connectedClients.Add(Context.ConnectionId, connName);
             //test
             Debug.WriteLine("print dict in onConnectedAsync");
