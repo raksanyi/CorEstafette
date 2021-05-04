@@ -12,6 +12,22 @@ export class Communicator implements ICommunicator {
     private connection: any;
     private callbacksByTopics: Map<string, (message: IMessage) => any>;
 
+    private timeoutAsync(ms: number = 2000, correlationId : string = "", content : string = "", sender : string = "", topic : string = "") : Promise<IResponse> {
+        let timeoutResponse = new Response(correlationId, content, sender, topic, false);
+        return new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), ms));
+    }
+
+    //register the handler to the hub method
+    private registerCallback(hubMethod: string, handler: Function) {
+        this.connection.on(hubMethod, handler);
+    }
+
+    //deregister all callbacks from the hub method
+    private deregisterAllCallbacks(hubMethod: string) {
+        this.connection.off(hubMethod);
+    }
+
+    //Question: Sall we make start connection public
     establishConnection(url: string) {
         this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
         this.connection.start()
@@ -23,30 +39,18 @@ export class Communicator implements ICommunicator {
             });
     }
 
-    //register the handler to the hub method
-    registerCallback(hubMethod: string, handler: Function) {
-        this.connection.on(hubMethod, handler);
-    }
-
-    //deregister all callbacks from the hub method
-    deregisterAllCallbacks(hubMethod: string) {
-        this.connection.off(hubMethod);
-    }
-
     constructor() {
         this.establishConnection("https://localhost:5001/signalRhub?name=testName");
         //this.connectionWrapper.establishConnection("https://localhost:5001/signalRhub");
         this.callbacksByTopics = new Map();
 
         this.registerCallback("onPublish", (messageReceived: IMessage) => {
-            //console.log(messageReceived);
             let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
             topicCallback(messageReceived);//invoke callback
         });
 
     }
 
-    //publish message under certain topic
     publish(topic: string, message: string) {
         console.log("Client called publish method");//test
         let correlationID = Guid.create().toString();
@@ -70,11 +74,9 @@ export class Communicator implements ICommunicator {
 
             let correlationID = Guid.create().toString();
             let messageToSend = new Message(correlationID, "", "user1", topic);
-            console.log(messageToSend);
             let serviceTask = this.connection.invoke("SubscribeTopicAsync", messageToSend);
             //set timeout
-            let timeoutResponse = new Response(correlationID, "", "user1", topic, false);
-            let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
+            let timeoutTask = this.timeoutAsync();
             //wait for one of the tasks to settle
             let taskResult = await Promise.race([serviceTask, timeoutTask]);
             if (taskResult.Success === true) {
@@ -109,8 +111,7 @@ export class Communicator implements ICommunicator {
             let messageToSend = new Message(correlationID, "", "user1", topic);
             let serviceTask = this.connection.invoke("UnsubscribeTopicAsync", messageToSend);
             //set timeout
-            let timeoutResponse = new Response(correlationID, "timeout", "testUser", topic, false);
-            let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
+            let timeoutTask = this.timeoutAsync();
             //wait for one of the tasks to settle
             let taskResult = await Promise.race([serviceTask, timeoutTask]);
             
@@ -122,6 +123,7 @@ export class Communicator implements ICommunicator {
             }
 
             //test
+            console.log("print the promise and response:");
             console.log(serviceTask);
             console.log(timeoutTask);
             console.log(taskResult);
@@ -132,8 +134,7 @@ export class Communicator implements ICommunicator {
 
     async disconnectAsync(): Promise<IResponse> {
         let serviceTask = this.connection.stop();
-        let timeoutResponse = new Response("", "timeout", "testUser", "", false);
-        let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000)); //timeout after two seconds
+        let timeoutTask = this.timeoutAsync();
         let taskResult = await Promise.race([serviceTask, timeoutTask]);
         return taskResult;
     }
