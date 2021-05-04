@@ -60,6 +60,8 @@ document.getElementById("unsubscribeButton").addEventListener("click", function 
 
 });
 
+
+
 // Client can stop the connection
 document.getElementById("stopConnectionButton").addEventListener("click", function () {
     let result = comm.disconnectAsync();

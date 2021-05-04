@@ -9,6 +9,7 @@ import { IResponse } from "./IResponse";
 
 export class Communicator implements ICommunicator {
 
+    private user: string;//test
     private connection: any;
     private callbacksByTopics: Map<string, (message: IMessage) => any>;
 
@@ -28,31 +29,43 @@ export class Communicator implements ICommunicator {
         this.connection.off(hubMethod);
     }
 
-    //Question: Sall we make start connection public
-    establishConnection(url: string) {
+    //initialize the connection and start it; throw an exception if connection doesn't success
+    private establishConnection(url: string) {
         this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
         let startTask = this.connection.start();
-        console.log(startTask);
-        startTask.then(() => {
-                console.log("connected to hub");//How to send response back to the client?
-            })
-            .catch(() => {
-                console.log("failed to connect");
-            });
+        let timeoutTask = this.timeoutAsync();
+        let errorMsg = "failed to connect with the hub";
+
+        Promise.race([startTask, timeoutTask]).then(
+            (res): IResponse => { return this.connection.invoke("ConnectAsync", this.user); }
+        ).then(
+            (res: IResponse) => {
+                console.log(res);
+                if (res.Success === true) {
+                    console.log("successfully registered");
+                } else {
+                    errorMsg = "user name already in used";
+                    throw errorMsg;
+                }
+            }
+        ).catch(() => {
+            throw new Error(errorMsg);
+        });
     }
 
     constructor() {
-        this.establishConnection("https://localhost:5001/signalRhub?name=testName");
-        //this.connectionWrapper.establishConnection("https://localhost:5001/signalRhub");
+        //test
+        this.user = "testUser"
+        //remove this later: pass parameter thru url
+        //this.establishConnection("https://localhost:5001/signalRhub?name=testUser");
+        this.establishConnection("https://localhost:5001/signalRhub");
+
         this.callbacksByTopics = new Map();
 
+        //invoke the proper callback when the hub sends topic-based message to the client
         this.registerCallback("onPublish", (messageReceived: IMessage) => {
             let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
             topicCallback(messageReceived);//invoke callback
-        });
-
-        this.registerCallback("onConnect", (response: IResponse) => {
-            console.log(response);//test
         });
 
     }
@@ -60,7 +73,7 @@ export class Communicator implements ICommunicator {
     publish(topic: string, message: string) {
         console.log("Client called publish method");//test
         let correlationID = Guid.create().toString();
-        let messageToSend = new Message(correlationID, message, "user1", topic);
+        let messageToSend = new Message(correlationID, message, this.user, topic);
         console.log(messageToSend)
         this.connection.invoke("PublishAsync", messageToSend);
     }
@@ -71,7 +84,7 @@ export class Communicator implements ICommunicator {
 
         if (this.callbacksByTopics.has(topic)) {//cannot subscribe twice
 
-            let duplicateSubResponse = new Response("", "", "user1", topic, false);
+            let duplicateSubResponse = new Response("", "cannot subscribe to the same topic twice", this.user, topic, false);
             return new Promise<IResponse>((resolve, reject) => {
                 reject(duplicateSubResponse);
             });
@@ -80,8 +93,8 @@ export class Communicator implements ICommunicator {
 
             let correlationID = Guid.create().toString();
             let messageToSend = new Message(correlationID, "", "user1", topic);
+
             let serviceTask = this.connection.invoke("SubscribeTopicAsync", messageToSend);
-            //set timeout
             let timeoutTask = this.timeoutAsync();
             //wait for one of the tasks to settle
             let taskResult = await Promise.race([serviceTask, timeoutTask]);
@@ -107,14 +120,14 @@ export class Communicator implements ICommunicator {
 
         if (!this.callbacksByTopics.has(topic)) {
 
-            let duplicateUnsubResponse = new Response("", "you need to subscribe before unsubscribing", "user1", topic, false);
+            let duplicateUnsubResponse = new Response("", "you need to subscribe before unsubscribing", this.user, topic, false);
             return new Promise<IResponse>((resolve, reject) => {
                 reject(duplicateUnsubResponse);
             });
 
         } else {
             let correlationID = Guid.create().toString();
-            let messageToSend = new Message(correlationID, "", "user1", topic);
+            let messageToSend = new Message(correlationID, "", this.user, topic);
             let serviceTask = this.connection.invoke("UnsubscribeTopicAsync", messageToSend);
             //set timeout
             let timeoutTask = this.timeoutAsync();
