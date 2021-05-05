@@ -10,7 +10,12 @@ export interface ICommunicator {
     //unsubscribe from a topic, remove the cached callback, and return a promise of IResponse
     unsubscribeAsync: (topic: string) => Promise<IResponse>;
 
+
     //queryAsync: (responder: string, additionalData: string) => Promise<IResponse>;
-    queryAsync: (responder: string, additionalData: string, respondCallback: (request: IRequest) => any) => void;
+    //queryAsync: (responder: string, additionalData: string, respondCallback: (request: IRequest) => any) => void;
     //queryAsync: (responder: string, additionalData: string, respondCallback: (request: IRequest) => any) => Promise<IResponse>;
+
+    //stop the connection to SignalRHub
+    disconnectAsync: () => Promise<IResponse>;
+
 }
