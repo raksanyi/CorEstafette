@@ -31,15 +31,6 @@ export class Communicator implements ICommunicator {
         this.connection.on(hubMethod, handler);
     }
 
-    //deregister all callbacks from the hub method
-    private deregisterAllCallbacks(hubMethod: string) {
-        this.connection.off(hubMethod);
-    }
-
-
-  
-
-  
     //initialize the connection and start it; throw an exception if connection fails
     private establishConnection(url: string) {
 
@@ -64,24 +55,21 @@ export class Communicator implements ICommunicator {
                 } else {//duplicate user name, need to stop connection and throw
                     this.connection.stop();
                     throw resolve;
-                    console.log("stopped");
                 }
             },
             (reject: any): void => {//reject could be either response or string
-                throw new Response("", "", "", "", false);
+                throw new Response("", "failed to register the connection", "", "", false);
         });
     }
 
     constructor() {
-        //test
-        
-   
-        //remove this later: pass parameter thru url
-        //this.establishConnection("https://localhost:5001/signalRhub?name=testUser");
+        //build connection and register the user name
         this.establishConnection("https://localhost:5001/signalRhub");
 
         this.callbacksByTopics = new Map();
         this.callbacksByResponder = new Map();
+
+        //generate unique user id
         this.userId = "User" + Math.floor(Math.random() * (100 - 1 + 1)) + 1;
         console.log(this.userId);
 
@@ -89,10 +77,9 @@ export class Communicator implements ICommunicator {
         this.registerCallback("onPublish", (messageReceived: IMessage) => {
             let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
             topicCallback(messageReceived);//invoke callback
-
-            //TODO: does callback have more parameters?
         });
 
+        
         this.registerCallback("OnQuery", (requestReceived: IRequest) => {
             console.log(requestReceived);
 
@@ -150,7 +137,7 @@ export class Communicator implements ICommunicator {
         } else {
 
             let correlationID = Guid.create().toString();
-            let messageToSend = new Message(correlationID, "", "user1", topic);
+            let messageToSend = new Message(correlationID, "", this.userId, topic);
 
             let serviceTask = this.connection.invoke("SubscribeTopicAsync", messageToSend);
             let timeoutTask = this.timeoutAsync();
