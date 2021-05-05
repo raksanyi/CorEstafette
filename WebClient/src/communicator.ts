@@ -16,7 +16,9 @@ export class Communicator implements ICommunicator {
     //construct and return a timeout promise which will reject after 2 seconds
     private timeoutAsync(ms: number = 2000, correlationId : string = "", content : string = "timeout", sender : string = "", topic : string = "") : Promise<IResponse> {
         let timeoutResponse = new Response(correlationId, content, sender, topic, false);
-        return new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), ms));
+        return new Promise((resolve, reject) => setTimeout(() => {
+            reject(timeoutResponse)
+        }, ms));
     }
 
     //register the handler to the hub method
@@ -53,6 +55,7 @@ export class Communicator implements ICommunicator {
                 } else {//duplicate user name, need to stop connection and throw
                     this.connection.stop();
                     throw resolve;
+                    console.log("stopped");
                 }
             },
             (reject: any): void => {//reject could be either response or string

@@ -24,13 +24,13 @@ namespace CorEstafette.Hubs
 
         //cache the connection's name and id; return a success response if the connection is valid;
         // return a failure response if the connection's name is already in used
-        //public async Task<IResponse> ConnectAsync(string userName)
-        //{
-        //    bool success = ConnectedClients.TryAdd(userName, Context.ConnectionId);
-        //    IResponse res = new Response("", success);
-        //    foreach (var kvp in ConnectedClients) { Debug.WriteLine(kvp.Key + " " + kvp.Value); } //test
-        //    return res;
-        //}
+        public async Task<IResponse> ConnectAsync(string userName)
+        {
+            bool success = ConnectedClients.TryAdd(userName, Context.ConnectionId);
+            IResponse res = new Response("", success);
+            foreach (var kvp in ConnectedClients) { Debug.WriteLine(kvp.Key + " " + kvp.Value); } //test
+            return res;
+        }
 
         //remove the connection from the cache
         public override Task OnDisconnectedAsync(Exception exception)
@@ -59,7 +59,6 @@ namespace CorEstafette.Hubs
         //method for client to subscribe for a topic
         public async Task<IResponse> SubscribeTopicAsync(Message message)
         {
-            //System.Threading.Thread.Sleep(4000);//test
             await Groups.AddToGroupAsync(Context.ConnectionId, message.Topic);
             message.Content = $"{message.Sender} successfully subscribed to topic {message.Topic}";
             return new Response(message, true);

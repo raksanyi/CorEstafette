@@ -27,6 +27,7 @@ document.getElementById("subscribeButton").addEventListener("click", function ()
         li.textContent = "subscription success";
         document.getElementById("messagesList").appendChild(li);
     }).catch((err: any) => {
+        console.log(err);
         let li = document.createElement("li");
         li.textContent = "subscription failed";
         document.getElementById("messagesList").appendChild(li);
@@ -45,14 +46,15 @@ document.getElementById("unsubscribeButton").addEventListener("click", function 
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
     let result = comm.unsubscribeAsync(topic);
-    result.then((res) => {
+    result.then((res : any) => {
             //test
             //const messageReceived: IResponse = <IResponse>res;
             //console.log(messageReceived);
             let li = document.createElement("li");
             li.textContent = "unsubscription success";
             document.getElementById("messagesList").appendChild(li);
-        }).catch((err: any) => {
+    }).catch((err: any) => {
+            console.log(err);
             let li = document.createElement("li");
             li.textContent = "unsubscription failed";
             document.getElementById("messagesList").appendChild(li);
