@@ -32,7 +32,7 @@ namespace CorEstafette.Hubs
 
         static private ConcurrentDictionary<string, string> ConnectedClients = new ConcurrentDictionary<string, string>();
     
-        private static ConcurrentDictionary<string, string> responsesByConnectionsIds = new ConcurrentDictionary<string, string>();
+        private static ConcurrentDictionary<string, TaskCompletionSource<IResponse>> responsesByCorrelationIds = new ConcurrentDictionary<string, TaskCompletionSource<IResponse>>();
 
         //public override Task OnConnectedAsync()
         //{
@@ -91,36 +91,29 @@ namespace CorEstafette.Hubs
             return new Response(message, true);
         }
 
-        //public async Task QueryAsync(Request request)
-        //{
-        //    await Clients.Client(namesByConnectionsIds[request.Destination]).SendAsync("OnQuery", request);
-
-        //}
-
-        public async Task QueryAsync(Request requestRecived)
+        public async Task<IResponse> QueryAsync(Request request)
         {
-            try
-            {
-                await Clients.Client(ConnectedClients[requestRecived.Destination]).SendAsync("OnQuery", requestRecived);
-            }
-            catch (Exception e)
-            {
-                throw new HubException("This error will be sent to the client!" + e);
-            }
-            
+            responsesByCorrelationIds[request.CorrelationId] = new TaskCompletionSource<IResponse>();
 
+            await Clients.Client(ConnectedClients[request.Destination]).SendAsync("OnQuery", request);
+            var responseTask = responsesByCorrelationIds[request.CorrelationId].Task;
+            var timeoutTask = Task.Delay(2000);
+            var result = await Task.WhenAny(responseTask, timeoutTask);
+
+            if (result == responseTask)
+            {
+                responsesByCorrelationIds.TryRemove(request.CorrelationId, out var tcs);
+                return tcs.Task.Result;
+            }
+            return new Response(false, request.CorrelationId, null, "Query failed after 2 second time out", request.Sender, DateTime.Now); 
         }
 
 
-        //public async Task RespondQueryAsync(Response response)
-        //{
-           
-        //   await Clients.Client(namesByConnectionsIds[response.Sender]).SendAsync("OnResponse", response);
-        //}
+        public void RespondQueryAsync(Response response)
+        {
 
-
-
+            responsesByCorrelationIds[response.CorrelationId].TrySetResult(response);
+         
+        }
     }
-
-  
 }

@@ -4,6 +4,13 @@ import { IMessage } from "./IMessage";
 import { IRequest } from "./IRequest";
 
 let comm = new Communicator();
+/*
+let comm : any;
+document.getElementById("connectButton").addEventListener("click", function () {
+    let user = (<HTMLInputElement>document.getElementById("userName")).value;
+    comm = new Communicator(user);
+});
+*/
 
 //callback for receiving messages
 let onReceive = function (message: IMessage) {
@@ -16,40 +23,22 @@ let onReceive = function (message: IMessage) {
     document.getElementById("messagesList").appendChild(li);
 }
 
-//let onRequest = function (request: IRequest) {
-//    console.log("Received request from");
-//    let encodedMsg = "Received request from" + request.Sender;
-//    let li = document.createElement("li");
-//    li.textContent = encodedMsg;
-//    document.getElementById("messagesList").appendChild(li);
-//    //return "Send back response";
-//    let respondMessage = "send back resposne";
-//    //return something to the callback 
-//    comm.respondQueryAsync(request, respondMessage);
-//}
 
-/*
+
 let onRequest = function (request: IRequest) : string {
     console.log("Received request from");
-    let encodedMsg = "Received request from" + request.Sender;
+    let encodedMsg = "Received request from " + request.Sender;
     let li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
-    return "Send back response";
-   
-    //comm.respondQueryAsync(request, respondMessage);
+    return request.Content;
 }
 
-let onResponse = function (response:IResponse) {
-    console.log("Received response from");
-    let encodedMsg = "Received response from" + response.Sender;
-    let li = document.createElement("li");
-    li.textContent = encodedMsg;
-    document.getElementById("messagesList").appendChild(li);
+//Add user callback to responder map
+//move to constructor later?
+comm.addResponder("user", onRequest);
 
 
-}
-*/
 
 document.getElementById("subButton").addEventListener("click", function () {
     let topic = (<HTMLInputElement>document.getElementById("subTopic")).value;
@@ -95,7 +84,6 @@ document.getElementById("unsubButton").addEventListener("click", function () {
 
 });
 
-/*
 document.getElementById("requestButton").addEventListener("click", function(){
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
@@ -103,19 +91,33 @@ document.getElementById("requestButton").addEventListener("click", function(){
     let additionalData = (<HTMLInputElement>document.getElementById("additionalDataInput")).value;
     let responder = (<HTMLInputElement>document.getElementById("responderInput")).value;
 
-    //comm.addResponder(responder, onRequest);
-    //comm.queryAsync(responder, additionalData);
-
     
-   // comm.queryAsync(responder, additionalData, onRequest);
+    //comm.queryAsync(responder, additionalData);
+    //comm.addResponder(responder, onRequest);
+    
+    let result = comm.queryAsync(responder, additionalData);
 
+    result.then((res: any) => {
+        //test
+        const messageReceived: IResponse = <IResponse>res;
+        console.log(messageReceived);
+        let li = document.createElement("li");
+        li.textContent = "Received " + messageReceived.Content;
+        document.getElementById("messagesList").appendChild(li);
+    }).catch((err: any) => {
+        console.log(err);
+        let li = document.createElement("li");
+        li.textContent = "unsubscription failed";
+        document.getElementById("messagesList").appendChild(li);
+    });
+    
 
-})*/
+})
 
 
 
 // Client can stop the connection
-
+/*
 document.getElementById("stopConnectionButton").addEventListener("click", function () {
     let result = comm.disconnectAsync();
     result.then((res) => {
@@ -129,3 +131,4 @@ document.getElementById("stopConnectionButton").addEventListener("click", functi
     });
 });
 
+*/
