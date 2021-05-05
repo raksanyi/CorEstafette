@@ -9,6 +9,7 @@ let comm: ICommunicator;
 document.getElementById("connectButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userName")).value;
     comm = new Communicator(user);
+    comm.addResponder(user, onRequest);
 });
 
 //callback for receiving messages
@@ -35,7 +36,7 @@ let onRequest = function (request: IRequest) : string {
 
 //Add user callback to responder map
 //move to constructor later?
-comm.addResponder("user", onRequest);
+//comm.addResponder("user", onRequest);
 
 
 
@@ -83,7 +84,9 @@ document.getElementById("unsubButton").addEventListener("click", function () {
 
 });
 
-document.getElementById("requestButton").addEventListener("click", function(){
+document.getElementById("requestButton").addEventListener("click", function () {
+   // let topic = (<HTMLInputElement>document.getElementById("additionalData")).value;
+
     let additionalData = (<HTMLInputElement>document.getElementById("additionalData")).value;
     let responder = (<HTMLInputElement>document.getElementById("responder")).value;
 

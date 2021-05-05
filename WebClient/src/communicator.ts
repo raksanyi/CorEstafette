@@ -75,6 +75,7 @@ export class Communicator implements ICommunicator {
 
         //generate unique user id
         //this.userId = "User" + Math.floor(Math.random() * (100 - 1 + 1)) + 1;
+
         this.userId = user;
         console.log(this.userId);
 
@@ -89,8 +90,8 @@ export class Communicator implements ICommunicator {
             console.log(requestReceived);
             console.log(this.callbacksByResponder);
 
-            //let respondCallback = this.callbacksByResponder.get(requestReceived.Destination);
-            let respondCallback = this.callbacksByResponder.get("user");
+            let respondCallback = this.callbacksByResponder.get(requestReceived.Destination);
+            //let respondCallback = this.callbacksByResponder.get("user");
             let result = respondCallback(requestReceived);
             console.log(result);
 
