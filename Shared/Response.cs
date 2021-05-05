@@ -56,6 +56,12 @@ namespace SignalRCommunicator
             Content = content;
         }
 
+        public Response(string sender, string topic, string content, bool success)
+            : this(topic, content, success)
+        {
+            Sender = sender;
+        }
+
         public Response(Message message, bool success)
             : this(success, message.CorrelationId, message.Topic, message.Content, message.Sender, message.Timestamp)
         {

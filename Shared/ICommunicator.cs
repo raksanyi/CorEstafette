@@ -28,5 +28,13 @@ namespace SignalRCommunicator
         /// <returns></returns>
 
         Task PublishAsync(string topic, string message);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="responder"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        bool AddResponder(string responder, Func<IRequest, Object> callBack);
     }
 }
