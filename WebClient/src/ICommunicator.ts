@@ -11,8 +11,9 @@ export interface ICommunicator {
     unsubscribeAsync: (topic: string) => Promise<IResponse>;
 
 
-    queryAsync: (responder: string, additionalData: string, respondCallback: (request: IRequest) => string) => Promise<IResponse>;
+    queryAsync: (responder: string, additionalData: string) => Promise<IResponse>;
 
+    addResponder: (responder: string, respondCallback: (request: IRequest) => string) => void;
     //stop the connection to SignalRHub
     disconnectAsync: () => Promise<IResponse>;
 

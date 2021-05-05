@@ -2,15 +2,14 @@
 import { IResponse } from "./IResponse";
 import { IMessage } from "./IMessage";
 import { IRequest } from "./IRequest";
+import { ICommunicator } from "./ICommunicator";
 
-let comm = new Communicator();
-/*
-let comm : any;
+let comm: ICommunicator;
+
 document.getElementById("connectButton").addEventListener("click", function () {
     let user = (<HTMLInputElement>document.getElementById("userName")).value;
     comm = new Communicator(user);
 });
-*/
 
 //callback for receiving messages
 let onReceive = function (message: IMessage) {
@@ -43,7 +42,7 @@ comm.addResponder("user", onRequest);
 document.getElementById("subButton").addEventListener("click", function () {
     let topic = (<HTMLInputElement>document.getElementById("subTopic")).value;
     let result = comm.subscribeAsync(topic, onReceive);
-    result.then((res) => {
+    result.then((res: any) => {
         //test
         //const messageReceived: IResponse = <IResponse>res;
         //console.log(messageReceived);
@@ -85,11 +84,8 @@ document.getElementById("unsubButton").addEventListener("click", function () {
 });
 
 document.getElementById("requestButton").addEventListener("click", function(){
-    let user = (<HTMLInputElement>document.getElementById("userInput")).value;
-    let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
-    let message = (<HTMLInputElement>document.getElementById("messageInput")).value;
-    let additionalData = (<HTMLInputElement>document.getElementById("additionalDataInput")).value;
-    let responder = (<HTMLInputElement>document.getElementById("responderInput")).value;
+    let additionalData = (<HTMLInputElement>document.getElementById("additionalData")).value;
+    let responder = (<HTMLInputElement>document.getElementById("responder")).value;
 
     
     //comm.queryAsync(responder, additionalData);

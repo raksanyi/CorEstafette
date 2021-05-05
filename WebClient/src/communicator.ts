@@ -67,14 +67,15 @@ export class Communicator implements ICommunicator {
         });
     }
 
-    constructor() {
+    constructor(user: string) {
         this.establishConnection("https://localhost:5001/signalRhub");
 
         this.callbacksByTopics = new Map();
         this.callbacksByResponder = new Map();
 
         //generate unique user id
-        this.userId = "User" + Math.floor(Math.random() * (100 - 1 + 1)) + 1;
+        //this.userId = "User" + Math.floor(Math.random() * (100 - 1 + 1)) + 1;
+        this.userId = user;
         console.log(this.userId);
 
         //invoke the proper callback when the hub sends topic-based message to the client
