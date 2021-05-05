@@ -71,5 +71,7 @@ namespace CorEstafette.Hubs
             message.Content = $"{message.Sender} successfully unsubscribe from topic {message.Topic}";
             return new Response(message, true);
         }
+
+
     }
 }
