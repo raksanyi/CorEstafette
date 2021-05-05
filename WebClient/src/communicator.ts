@@ -41,6 +41,7 @@ export class Communicator implements ICommunicator {
     constructor() {
         this.connectionWrapper.establishConnection("https://localhost:5001/signalRhub");
         this.callbacksByTopics = new Map();
+        this.callbacksByResponder = new Map();
         this.userId = "User" + Math.floor(Math.random() * (100 - 1 + 1)) + 1;
         console.log(this.userId);
 
@@ -62,11 +63,35 @@ export class Communicator implements ICommunicator {
             console.log(requestReceived);
 
             let respondCallback = this.callbacksByResponder.get(requestReceived.Destination);
-            
-            respondCallback(requestReceived); //do we get return value from callback
-            //sset a new response with the return message as content
-            //invoke respondQueryAsync in SignalRHub
+            respondCallback(requestReceived); 
+
+            //async using await and use 2000 sec task
+
+            let result = respondCallback(requestReceived);
+
+            //console.log(result);
+
+            //queryResponseAsync to the hub
+            //create a new response
+            let responseToSend = new Response(requestReceived.CorrelationId, result, requestReceived.Sender, "", true);
+            this.connectionWrapper.connection.invoke("RespondQueryAysnc", responseToSend);
         })
+
+        //this.connectionWrapper.registerCallback("OnResponse", (responseReceived: IResponse) => {
+        //    console.log(responseReceived);
+
+        //    let respondCallback = this.callbacksByResponder.get(responseReceived.Sender);
+        //    //respondCallback(requestReceived); 
+
+        //    respondCallback(responseReceived);
+
+           
+        //})
+
+        //this.connectionWrapper.registerCallback("OnResponse", (responseReceived: IResponse) => {
+        //    console.log(responseReceived);
+
+        //})
     }
 
 
@@ -154,26 +179,45 @@ export class Communicator implements ICommunicator {
         }
     }
 
-    queryAsync(responder: string, additionalData: string): Promise<IResponse> {
-       // id: string, content: string, sender: string, topic: string, destination: boolean
+   
+
+   queryAsync(responder: string, additionalData: string, respondCallback: (request: IRequest) => any) {: Promise<IResponse> {
+    
+        this.callbacksByResponder.set(responder, respondCallback);
+        console.log(this.callbacksByResponder);
+    
         let correlationID = Guid.create().toString();
-        let requestToSend = new Request(correlationID, additionalData, this.userId, "", responder);
-        let serviceTask = this.connectionWrapper.connection.invoke("QueryAsync", requestToSend);
+        let requestToSend = new Request(correlationID, additionalData, this.userId, null, responder);
+        console.log(requestToSend);
+        this.connectionWrapper.connection.invoke("QueryAsync", requestToSend).catch(err => console.log(err));
 
-        //let timeoutResponse = new Response(correlationID, "", "user1", "", false);
-        //let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000));
-        //let taskResult = await Promise.race([serviceTask, timeoutTask]);
-        //return taskResult;
-        return serviceTask;
+        let timeoutResponse = new Response(correlationID, "", this.userId, "", false);
+        let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000));
+        let taskResult = await Promise.race([serviceTask, timeoutTask]);
+        return taskResult;
     }
 
-     //bool AddResponse(string responder, Func<IRequest, object> callback);
-    addResponder(responder : string, respondCallback: (request: IRequest) => any) {
-        if (!this.callbacksByResponder.has(responder)) {
-            this.callbacksByResponder.set(responder, respondCallback);
-            console.log(this.callbacksByResponder);
-        }
-    }
+    //async queryAsync(responder: string, additionalData: string): Promise<IResponse> {
+    //    // id: string, content: string, sender: string, topic: string, destination: boolean
+    //    let correlationID = Guid.create().toString();
+    //    let requestToSend = new Request(correlationID, additionalData, this.userId, "", responder);
+    //    console.log("requestToSend" + requestToSend);
+    //    let serviceTask = this.connectionWrapper.connection.invoke("QueryAsync", requestToSend);
+
+    //    let timeoutResponse = new Response(correlationID, "", this.userId, "", false);
+    //    let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000));
+    //    let taskResult = await Promise.race([serviceTask, timeoutTask]);
+    //    return taskResult;
+    //}
+
+    // //bool AddResponse(string responder, Func<IRequest, object> callback);
+    //addResponder(responder : string, respondCallback: (request: IRequest) => any) {
+    //    //if (!this.callbacksByResponder.has(responder)) {
+
+    //        this.callbacksByResponder.set(responder, respondCallback);
+    //        console.log(this.callbacksByResponder);
+    //    //}
+    //}
 
     respondQueryAsync(requestReceived: IRequest, respondMessage: string) {
         let responseToSend = new Response(requestReceived.CorrelationId, respondMessage, requestReceived.Sender, "", true);

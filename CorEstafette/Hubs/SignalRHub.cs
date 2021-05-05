@@ -8,6 +8,21 @@ using System;
 //Hub manages connection, group, messaging
 namespace CorEstafette.Hubs
 {
+
+    public class Request
+    {
+
+
+        public string CorrelationId { get; set; }
+        public string Content { get; set; }
+        public string Sender { get; set; }
+        public string Topic { get; set; }
+        public DateTime TimeStamp { get; set; }
+        public string Destination { get; set; }
+    }
+
+
+
     public class SignalRHub : Hub
     {
         public async Task PublishAsync(Message message)
@@ -19,6 +34,7 @@ namespace CorEstafette.Hubs
         public async Task<IResponse> SubscribeTopicAsync(Message message)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, message.Topic);
+            
             message.Content = $"{message.Sender} successfully subscribed to topic {message.Topic}";
             return new Response(message, true);
         }
@@ -32,43 +48,36 @@ namespace CorEstafette.Hubs
         }
 
         private static ConcurrentDictionary<string, string> namesByConnectionsIds = new ConcurrentDictionary<string, string>();
+        private static ConcurrentDictionary<string, string> responsesByConnectionsIds = new ConcurrentDictionary<string, string>();
 
-        public async Task QueryAsync(Request request)
-        {
-            await Clients.Client(namesByConnectionsIds[request.Destination]).SendAsync("OnQuery", request);
-        }
-
-        public async Task RespondQueryAsync(Response response)
-        {
-           await Clients.Client(namesByConnectionsIds[response.Sender]).SendAsync("OnResponse", response);
-        }
-
-        //public async Task QueryAsync(string responder, string additionalData)
+        //public async Task QueryAsync(Request request)
         //{
-        //    await Clients.Client(namesByConnectionsIds.GetOrAdd(responder, "")).SendAsync("OnQuery", request);
+        //    await Clients.Client(namesByConnectionsIds[request.Destination]).SendAsync("OnQuery", request);
+
         //}
 
-        //public Response ConnectAsync(string ClientName)
+        public async Task QueryAsync(Request requestRecived)
+        {
+            try
+            {
+                await Clients.Client(namesByConnectionsIds[requestRecived.Destination]).SendAsync("OnQuery", requestRecived);
+            }
+            catch (Exception e)
+            {
+                throw new HubException("This error will be sent to the client!" + e);
+            }
+            
+
+        }
+
+
+        //public async Task RespondQueryAsync(Response response)
         //{
-        //    return new Response();
+           
+        //   await Clients.Client(namesByConnectionsIds[response.Sender]).SendAsync("OnResponse", response);
         //}
+
     }
 
-    [Serializable]
-    public class Request
-    {
-
-        [JsonProperty]
-        public string CorrelationId { get; set; }
-        [JsonProperty]
-        public string Content { get; set; }
-        [JsonProperty]
-        public string Sender { get; set; }
-        [JsonProperty]
-        public string Topic { get; set; }
-        [JsonProperty]
-        public DateTime TimeStamp { get; set; }
-        [JsonProperty]
-        public string Destination { get; set; }
-    }
+  
 }

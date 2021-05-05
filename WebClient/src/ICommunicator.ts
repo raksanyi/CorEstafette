@@ -1,5 +1,6 @@
 ﻿import { IResponse } from "./IResponse";
 import { IMessage } from "./IMessage";
+import { IRequest } from "./IRequest";
 
 export interface ICommunicator {
     //publish message under certain topic
@@ -9,5 +10,7 @@ export interface ICommunicator {
     //unsubscribe from a topic, remove the cached callback, and return a promise of IResponse
     unsubscribeAsync: (topic: string) => Promise<IResponse>;
 
-    queryAsync: (responder: string, additionalData: string) => Promise<IResponse>;
+    //queryAsync: (responder: string, additionalData: string) => Promise<IResponse>;
+    queryAsync: (responder: string, additionalData: string, respondCallback: (request: IRequest) => any) => void;
+    //queryAsync: (responder: string, additionalData: string, respondCallback: (request: IRequest) => any) => Promise<IResponse>;
 }
