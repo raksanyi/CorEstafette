@@ -32,7 +32,7 @@ namespace CorEstafette.Hubs
 
         static private ConcurrentDictionary<string, string> ConnectedClients = new ConcurrentDictionary<string, string>();
     
-        private static ConcurrentDictionary<string, TaskCompletionSource<IResponse>> responsesByConnectionsIds = new ConcurrentDictionary<string, TaskCompletionSource<IResponse>>();
+        private static ConcurrentDictionary<string, TaskCompletionSource<IResponse>> responsesByCorrelationIds = new ConcurrentDictionary<string, TaskCompletionSource<IResponse>>();
 
         //public override Task OnConnectedAsync()
         //{
@@ -91,35 +91,29 @@ namespace CorEstafette.Hubs
             return new Response(message, true);
         }
 
-        public async Task<IResponse> QueryAsync(Request requestRecived)
+        public async Task<IResponse> QueryAsync(Request request)
         {
-            responsesByConnectionsIds[requestRecived.CorrelationId] = new TaskCompletionSource<IResponse>();
+            responsesByCorrelationIds[request.CorrelationId] = new TaskCompletionSource<IResponse>();
 
-            await Clients.Client(ConnectedClients[requestRecived.Destination]).SendAsync("OnQuery", requestRecived);
-            var responseTask = responsesByConnectionsIds[requestRecived.CorrelationId].Task;
+            await Clients.Client(ConnectedClients[request.Destination]).SendAsync("OnQuery", request);
+            var responseTask = responsesByCorrelationIds[request.CorrelationId].Task;
             var timeoutTask = Task.Delay(2000);
             var result = await Task.WhenAny(responseTask, timeoutTask);
 
             if (result == responseTask)
             {
-                responsesByConnectionsIds.TryRemove(requestRecived.CorrelationId, out var tcs);
+                responsesByCorrelationIds.TryRemove(request.CorrelationId, out var tcs);
                 return tcs.Task.Result;
             }
-            return new Response(true, requestRecived.CorrelationId, null, "query", requestRecived.Sender, DateTime.Now); 
-
+            return new Response(false, request.CorrelationId, null, "Query failed after 2 second time out", request.Sender, DateTime.Now); 
         }
 
 
         public void RespondQueryAsync(Response response)
         {
 
-                responsesByConnectionsIds[response.CorrelationId].TrySetResult(response);
+            responsesByCorrelationIds[response.CorrelationId].TrySetResult(response);
          
         }
-
-
-
     }
-
-  
 }
