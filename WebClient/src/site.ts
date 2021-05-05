@@ -3,7 +3,9 @@ import { IResponse } from "./IResponse";
 import { IMessage } from "./IMessage";
 import { IRequest } from "./IRequest";
 
+
 let comm = new Communicator();
+
 
 //callback for receiving messages
 let onReceive = function (message: IMessage) {
@@ -16,28 +18,19 @@ let onReceive = function (message: IMessage) {
     document.getElementById("messagesList").appendChild(li);
 }
 
-//let onRequest = function (request: IRequest) {
-//    console.log("Received request from");
-//    let encodedMsg = "Received request from" + request.Sender;
-//    let li = document.createElement("li");
-//    li.textContent = encodedMsg;
-//    document.getElementById("messagesList").appendChild(li);
-//    //return "Send back response";
-//    let respondMessage = "send back resposne";
-//    //return something to the callback 
-//    comm.respondQueryAsync(request, respondMessage);
-//}
-
 let onRequest = function (request: IRequest) : string {
     console.log("Received request from");
-    let encodedMsg = "Received request from" + request.Sender;
+    let encodedMsg = "Received request from " + request.Sender;
     let li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
-    return "Send back response";
-   
-    //comm.respondQueryAsync(request, respondMessage);
+    return request.Content;
 }
+
+//Add user callback to responder map
+//move to constructor later?
+comm.addResponder("user", onRequest);
+
 
 let onResponse = function (response:IResponse) {
     console.log("Received response from");
@@ -45,8 +38,6 @@ let onResponse = function (response:IResponse) {
     let li = document.createElement("li");
     li.textContent = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
-
-
 }
 
 document.getElementById("subscribeButton").addEventListener("click", function () {
@@ -104,12 +95,26 @@ document.getElementById("requestButton").addEventListener("click", function(){
     let additionalData = (<HTMLInputElement>document.getElementById("additionalDataInput")).value;
     let responder = (<HTMLInputElement>document.getElementById("responderInput")).value;
 
-    //comm.addResponder(responder, onRequest);
-    //comm.queryAsync(responder, additionalData);
-
     
-   // comm.queryAsync(responder, additionalData, onRequest);
+    //comm.queryAsync(responder, additionalData);
+    //comm.addResponder(responder, onRequest);
+    
+    let result = comm.queryAsync(responder, additionalData);
 
+    result.then((res: any) => {
+        //test
+        const messageReceived: IResponse = <IResponse>res;
+        console.log(messageReceived);
+        let li = document.createElement("li");
+        li.textContent = "Received " + messageReceived.Content;
+        document.getElementById("messagesList").appendChild(li);
+    }).catch((err: any) => {
+        console.log(err);
+        let li = document.createElement("li");
+        li.textContent = "unsubscription failed";
+        document.getElementById("messagesList").appendChild(li);
+    });
+    
 
 })
 

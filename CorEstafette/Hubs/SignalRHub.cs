@@ -32,7 +32,7 @@ namespace CorEstafette.Hubs
 
         static private ConcurrentDictionary<string, string> ConnectedClients = new ConcurrentDictionary<string, string>();
     
-        private static ConcurrentDictionary<string, string> responsesByConnectionsIds = new ConcurrentDictionary<string, string>();
+        private static ConcurrentDictionary<string, TaskCompletionSource<IResponse>> responsesByConnectionsIds = new ConcurrentDictionary<string, TaskCompletionSource<IResponse>>();
 
         //public override Task OnConnectedAsync()
         //{
@@ -91,32 +91,31 @@ namespace CorEstafette.Hubs
             return new Response(message, true);
         }
 
-        //public async Task QueryAsync(Request request)
-        //{
-        //    await Clients.Client(namesByConnectionsIds[request.Destination]).SendAsync("OnQuery", request);
-
-        //}
-
-        public async Task QueryAsync(Request requestRecived)
+        public async Task<IResponse> QueryAsync(Request requestRecived)
         {
-            try
+            responsesByConnectionsIds[requestRecived.CorrelationId] = new TaskCompletionSource<IResponse>();
+
+            await Clients.Client(ConnectedClients[requestRecived.Destination]).SendAsync("OnQuery", requestRecived);
+            var responseTask = responsesByConnectionsIds[requestRecived.CorrelationId].Task;
+            var timeoutTask = Task.Delay(2000);
+            var result = await Task.WhenAny(responseTask, timeoutTask);
+
+            if (result == responseTask)
             {
-                await Clients.Client(ConnectedClients[requestRecived.Destination]).SendAsync("OnQuery", requestRecived);
+                responsesByConnectionsIds.TryRemove(requestRecived.CorrelationId, out var tcs);
+                return tcs.Task.Result;
             }
-            catch (Exception e)
-            {
-                throw new HubException("This error will be sent to the client!" + e);
-            }
-            
+            return new Response(true, requestRecived.CorrelationId, null, "query", requestRecived.Sender, DateTime.Now); 
 
         }
 
 
-        //public async Task RespondQueryAsync(Response response)
-        //{
-           
-        //   await Clients.Client(namesByConnectionsIds[response.Sender]).SendAsync("OnResponse", response);
-        //}
+        public void RespondQueryAsync(Response response)
+        {
+
+                responsesByConnectionsIds[response.CorrelationId].TrySetResult(response);
+         
+        }
 
 
 
