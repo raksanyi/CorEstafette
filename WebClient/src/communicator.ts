@@ -14,7 +14,7 @@ export class Communicator implements ICommunicator {
     private callbacksByTopics: Map<string, (message: IMessage) => any>;
 
     //construct and return a timeout promise which will reject after 2 seconds
-    private timeoutAsync(ms: number = 2000, correlationId : string = "", content : string = "", sender : string = "", topic : string = "") : Promise<IResponse> {
+    private timeoutAsync(ms: number = 2000, correlationId : string = "", content : string = "timeout", sender : string = "", topic : string = "") : Promise<IResponse> {
         let timeoutResponse = new Response(correlationId, content, sender, topic, false);
         return new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), ms));
     }
@@ -33,25 +33,30 @@ export class Communicator implements ICommunicator {
     private establishConnection(url: string) {
 
         this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
-        let startTask = this.connection.start();
-        let timeoutTask = this.timeoutAsync();
-        let errorMsg = "failed to connect with the hub";
 
-        Promise.race([startTask, timeoutTask]).then(
-            (res): IResponse => { return this.connection.invoke("ConnectAsync", this.user); }//register the user on the hub
-        ).then(
-            (res: IResponse) => {
-                console.log(res);
-                if (res.Success === true) {
-                    console.log("successfully registered");
-                } else {
-                    errorMsg = "user name already in used";
+        this.connection.start().then(
+
+            (resolve: any) => {
+                let registerTask = this.connection.invoke("ConnectAsync", this.user);
+                let timeoutTask = this.timeoutAsync();
+                return Promise.race([registerTask, timeoutTask]);
+            },
+            (reject: any): void => {
+                throw new Response("", "connection rejected", "", "", false);
+
+        }).then(
+
+            (resolve: IResponse): void => {
+                console.log(resolve);
+                if (resolve.Success === true) {
+                    console.log("successfully registered");//TODO: notify user?
+                } else {//duplicate user name, need to stop connection and throw
                     this.connection.stop();
-                    throw errorMsg;
+                    throw resolve;
                 }
-            }
-        ).catch(() => {
-            throw new Error(errorMsg);
+            },
+            (reject: any): void => {//reject could be either response or string
+                throw new Response("", "", "", "", false);
         });
     }
 
