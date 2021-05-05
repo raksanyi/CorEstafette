@@ -35,6 +35,6 @@ namespace SignalRCommunicator
         /// <param name="responder"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        bool AddResponder(string responder, Func<IRequest, Object> callBack);
+        Task<IResponse> AddResponder(string responderName, Func<IRequest, Object> callBack);
     }
 }

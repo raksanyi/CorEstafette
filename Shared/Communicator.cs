@@ -16,21 +16,36 @@ namespace SignalRCommunicator
         {
             callBackTopics = new Dictionary<string, Func<string, Task>>();
             callBackByResponder = new Dictionary<string, Func<IRequest, object>>();
-            UserId = "User" + new Random().Next(1, 50);
+            
+            UserId = "User" + new Random().Next(1, 500);
             connection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:44392/signalrhub")
                 .Build();
 
-            _ = Task.Run(async () => { await connection.StartAsync(); });
+            _ = Task.Run(async () => {
+                try
+                {
+                    await connection.StartAsync();
+                    await connection.InvokeAsync<Response>("ConnectAsync", UserId);
+                }
+                catch(Exception ex)
+                {
+                    ;
+                }
+                });
+
+
+
             connection.Closed += async (error) =>
             {
                 await Task.Delay(new Random().Next(0, 5) * 1000);
                 await connection.StartAsync();
             };
 
-            ConnectAsync();
+            //ConnectAsync();
  
             connection.On<Message>(nameof(OnPublish), OnPublish);
+            
         }
         private async Task OnPublish(Message message)
         {
@@ -89,9 +104,10 @@ namespace SignalRCommunicator
             await connection.InvokeAsync("PublishAsync", message);
         }
 
-        public bool AddResponder(string responder, Func<IRequest, Object> callBack)
+        public async Task<IResponse> AddResponder(string responder, Func<IRequest, Object> callBack)
         {
-            return callBackByResponder.TryAdd(responder, callBack);
+            //return callBackByResponder.TryAdd(responder, callBack);
+            return null;
         }
     }
 }

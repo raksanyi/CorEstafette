@@ -34,7 +34,7 @@ namespace WPFClient
 
             SubscribeCommand = new DelegateCommand(async () =>
             {
-                var response = await communicator.SubscribeAsync(SubscribeTopic, OnSubscribeAsync);
+                var response = await communicator.SubscribeAsync(Topic, OnSubscribeAsync);
                
                 if ( response == null )
                 {
@@ -44,12 +44,14 @@ namespace WPFClient
                 }
                 Messages = response.Content + Environment.NewLine + Messages;
                 OnPropertyChanged(nameof(Messages));
+                Username = response.Sender;
+                OnPropertyChanged(nameof(Username));
 
             });
 
             UnsubscribeCommand = new DelegateCommand(async () =>
             {
-                var response = await communicator.UnsubscribeAsync(UnsubscribeTopic);
+                var response = await communicator.UnsubscribeAsync(Topic);
                 if( response == null )
                 {
                     Messages = "Unsubscription failed." + Environment.NewLine + Messages;
@@ -67,8 +69,7 @@ namespace WPFClient
         public ICommand PublishMessage { get; set; }
         public ICommand SubscribeCommand { get; set; }
         public ICommand UnsubscribeCommand { get; set; }
-        public string SubscribeTopic { get; set; }
-        public string UnsubscribeTopic { get; set; }
+        public string Username { get; set; }
         public string LogMessages { get; set; }
         public string Messages { get; set; }
 
