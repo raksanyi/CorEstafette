@@ -4,59 +4,85 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="container">
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-2">User</div>
-        <div class="col-4"><input type="text" id="userInput" /></div>
-    </div>
-    <div class="row">
-        <div class="col-2">Topic</div>
-        <div class="col-4"><input type="text" id="topicInput" /></div>
-    </div>
-    <div class="row">
-        <div class="col-2">Message</div>
-        <div class="col-4"><input type="text" id="messageInput" /></div>
-    </div>
-    <div class="row">
-        <div class="col-2">Responder</div>
-        <div class="col-4"><input type="text" id="responderInput" /></div>
-    </div>
-    <div class="row">
-        <div class="col-2">Additional Data</div>
-        <div class="col-4"><input type="text" id="additionalDataInput" /></div>
-    </div>
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-4">
-            <input type="button" id="publishButton" value="Publish" />
-        </div>
-        <div class="col-4">
-            <input type="button" id="subscribeButton" value="Subscribe" />
-        </div>
-        <div class="col-4">
-            <input type="button" id="unsubscribeButton" value="Unsubscribe" />
+@*
+    <div class="container">
+        <div class="row">&nbsp;</div>
+
+        <div class="row">
+            <div class="col-2">Define User Name</div>
+            <div class="col-4"><input type="text" id="userInput" /></div>
+            <input type="button" id="connectButton" value="Connect" />
         </div>
 
-        <div class="col-4">
-            <input type="button" id="requestButton" value="Request" />
-
-        <div class="col-2">
-            <input type="button" id="stopConnectionButton" value="Stop Connection" />
-
+        <div class="row">
+            <div class="col-2">Topic</div>
+            <div class="col-4"><input type="text" id="topicInput" /></div>
+            <div class="col-4">
+                <input type="button" id="subscribeButton" value="Subscribe" />
+            </div>
+            <div class="col-4">
+                <input type="button" id="unsubscribeButton" value="Unsubscribe" />
+            </div>
         </div>
-    </div>
 
-</div>
-<div class="row">
-    <div class="col-12">
-        <hr />
-    </div>
-</div>
+        <div class="row">
+            <div class="col-2">Message</div>
+            <div class="col-4"><input type="text" id="messageInput" /></div>
+        </div>
+        <div class="row">
+            <div class="col-2">Topic</div>
+            <div class="col-4"><input type="text" id="topicInput" /></div>
+            <div class="col-4">
+                <input type="button" id="publishButton" value="Publish" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <hr />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6">
+                <ul id="messagesList"></ul>
+            </div>
+        </div>
+*@
+<style>
+    input {
+        margin-bottom: 5px;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+</style>
+
+<form id="connectForm">
+    <label for="User">User Name</label><br />
+    <input type="text" id="userName" /><br />
+    <input type="button" value="Connect" id="connectButton"/>
+    <input type="button" value="Disconnect" id="disconnectButton"/>
+</form>
+
+<form id="subForm">
+    <label for="Topic">Topic</label><br />
+    <input type="text" id="subTopic" /><br />
+    <input type="button" value="Subscribe" id="subButton"/>
+    <input type="button" value="Unsubscribe" id="unsubButton"/>
+</form>
+
+<form id="publishForm">
+    <label for="Publish">Topic</label><br />
+    <input type="text" id="publishTopic" /><br />
+    <label for="Publish">Message</label><br />
+    <input type="text" id="publishMessage" /><br />
+    <input type="button" value="Publish" id="publishButton"/>
+</form>
+
 <div class="row">
     <div class="col-6">
         <ul id="messagesList"></ul>
     </div>
 </div>
-
-@*<script src="~/js/signalr/dist/browser/signalr.js"></script>*@

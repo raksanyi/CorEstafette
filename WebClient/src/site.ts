@@ -28,6 +28,7 @@ let onReceive = function (message: IMessage) {
 //    comm.respondQueryAsync(request, respondMessage);
 //}
 
+/*
 let onRequest = function (request: IRequest) : string {
     console.log("Received request from");
     let encodedMsg = "Received request from" + request.Sender;
@@ -48,10 +49,10 @@ let onResponse = function (response:IResponse) {
 
 
 }
+*/
 
-document.getElementById("subscribeButton").addEventListener("click", function () {
-    let user = (<HTMLInputElement>document.getElementById("userInput")).value;
-    let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
+document.getElementById("subButton").addEventListener("click", function () {
+    let topic = (<HTMLInputElement>document.getElementById("subTopic")).value;
     let result = comm.subscribeAsync(topic, onReceive);
     result.then((res) => {
         //test
@@ -69,16 +70,14 @@ document.getElementById("subscribeButton").addEventListener("click", function ()
 });
 
 document.getElementById("publishButton").addEventListener("click", function () {
-    let user = (<HTMLInputElement>document.getElementById("userInput")).value;
-    let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
-    let message = (<HTMLInputElement>document.getElementById("messageInput")).value;
+    let topic = (<HTMLInputElement>document.getElementById("publishTopic")).value;
+    let message = (<HTMLInputElement>document.getElementById("publishMessage")).value;
     comm.publish(topic, message);
 
 });
 
-document.getElementById("unsubscribeButton").addEventListener("click", function () {
-    let user = (<HTMLInputElement>document.getElementById("userInput")).value;
-    let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
+document.getElementById("unsubButton").addEventListener("click", function () {
+    let topic = (<HTMLInputElement>document.getElementById("subTopic")).value;
     let result = comm.unsubscribeAsync(topic);
     result.then((res : any) => {
             //test
@@ -96,7 +95,7 @@ document.getElementById("unsubscribeButton").addEventListener("click", function 
 
 });
 
-
+/*
 document.getElementById("requestButton").addEventListener("click", function(){
     let user = (<HTMLInputElement>document.getElementById("userInput")).value;
     let topic = (<HTMLInputElement>document.getElementById("topicInput")).value;
@@ -111,7 +110,7 @@ document.getElementById("requestButton").addEventListener("click", function(){
    // comm.queryAsync(responder, additionalData, onRequest);
 
 
-})
+})*/
 
 
 
