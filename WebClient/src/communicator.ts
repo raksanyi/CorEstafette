@@ -193,9 +193,8 @@ export class Communicator implements ICommunicator {
         console.log(requestToSend);
         //let serviceTask = this.connection.invoke("QueryAsync", requestToSend).catch(err => console.log(err));
         let serviceTask = this.connection.invoke("QueryAsync", requestToSend);
+       let timeoutTask = this.timeoutAsync();
 
-        let timeoutResponse = new Response(correlationID, "", this.userId, "", false);
-        let timeoutTask = new Promise((resolve, reject) => setTimeout(() => reject(timeoutResponse), 2000));
         let taskResult = await Promise.race([serviceTask, timeoutTask]);
         console.log(taskResult);
         return taskResult;

@@ -10,8 +10,9 @@ let comm: ICommunicator;
 let onConnect = function (response: IResponse) {
     console.log(onConnect);
     let msg = response.Content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let encodedMsg = "<div class='message'>" + msg + "</div>"
     let li = document.createElement("li");
-    li.textContent = msg;
+    li.innerHTML = msg;//TODO: fix later
     document.getElementById("messagesList").appendChild(li);
 }
 
@@ -19,19 +20,18 @@ let onConnect = function (response: IResponse) {
 let onReceive = function (message: IMessage) {
     //console.log(message);
     let msg = message.Content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    let encodedMsg = msg + " under topic " + message.Topic;
+    let encodedMsg = "<div>Received message <div class='message'>" + msg + "</div> under topic <div class='message'>" + message.Topic + "</div></div>";
     let li = document.createElement("li");
-    li.textContent = encodedMsg;
+    li.innerHTML = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
 }
 
 let onRequest = function (request: IRequest): string {
-    console.log("Received request from");
-    let encodedMsg = "Received request from " + request.Sender;
+    let encodedMsg = "<div>Received a request message from <div class='message'>" + request.Sender+"</div></div>";
     let li = document.createElement("li");
-    li.textContent = encodedMsg;
+    li.innerHTML = encodedMsg;
     document.getElementById("messagesList").appendChild(li);
-    return request.Content;
+    return "echo back";
 }
 
 document.getElementById("connectButton").addEventListener("click", function () {
@@ -54,12 +54,12 @@ document.getElementById("subButton").addEventListener("click", function () {
         //const messageReceived: IResponse = <IResponse>res;
         //console.log(messageReceived);
         let li = document.createElement("li");
-        li.textContent = "subscription success";
+        li.innerHTML = "<div>Subscribed to <div class='message'>" + topic + "</div></div>";
         document.getElementById("messagesList").appendChild(li);
     }).catch((err: any) => {
         console.log(err);
         let li = document.createElement("li");
-        li.textContent = "subscription failed";
+        li.textContent = "Failed to subscribe";
         document.getElementById("messagesList").appendChild(li);
     });
 });
@@ -79,12 +79,12 @@ document.getElementById("unsubButton").addEventListener("click", function () {
             //const messageReceived: IResponse = <IResponse>res;
             //console.log(messageReceived);
             let li = document.createElement("li");
-            li.textContent = "unsubscription success";
+            li.innerHTML = "<div>Unsubscribed from <div class='message'>" + topic + "</div></div>";
             document.getElementById("messagesList").appendChild(li);
     }).catch((err: any) => {
             console.log(err);
             let li = document.createElement("li");
-            li.textContent = "unsubscription failed";
+            li.textContent = "Failed to unsubscribe";
             document.getElementById("messagesList").appendChild(li);
         });
 
@@ -102,17 +102,17 @@ document.getElementById("requestButton").addEventListener("click", function () {
     
     let result = comm.queryAsync(responder, additionalData);
 
-    result.then((res: any) => {
+    result.then((res: IResponse) => {
         //test
         const messageReceived: IResponse = <IResponse>res;
         console.log(messageReceived);
         let li = document.createElement("li");
-        li.textContent = "Received " + messageReceived.Content;
+        li.innerHTML = "<div>Received <div class='message'>" + messageReceived.Content + "</div> from <div class='message'>" + responder + "</div></div>";
         document.getElementById("messagesList").appendChild(li);
     }).catch((err: any) => {
         console.log(err);
         let li = document.createElement("li");
-        li.textContent = "unsubscription failed";
+        li.innerHTML = "<div>Failed to request from <div class='message'>" + responder + "</div></div>";
         document.getElementById("messagesList").appendChild(li);
     });
     
@@ -121,13 +121,13 @@ document.getElementById("requestButton").addEventListener("click", function () {
 
 document.getElementById("disconnectButton").addEventListener("click", function () {
     let result = comm.disconnectAsync();
-    result.then((res) => {
+    result.then((res: any) => {
         let li = document.createElement("li");
-        li.textContent = "disconnected";
+        li.textContent = "disconnected from the service";
         document.getElementById("messagesList").appendChild(li);
     }).catch((err: any) => {
         let li = document.createElement("li");
-        li.textContent = "failed to disconnect";
+        li.textContent = "disconnection failed";
         document.getElementById("messagesList").appendChild(li);
     });
 });
