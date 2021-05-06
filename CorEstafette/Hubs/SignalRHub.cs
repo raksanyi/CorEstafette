@@ -45,8 +45,8 @@ namespace CorEstafette.Hubs
         public async Task<IResponse> ConnectAsync(string userName)
         {
             bool success = ConnectedClients.TryAdd(userName, Context.ConnectionId);
-            IResponse res = new Response("", success);
             foreach (var kvp in ConnectedClients) { Debug.WriteLine(kvp.Key + " " + kvp.Value); } //test
+            IResponse res = new Response("", userName +  " is connected to the service", true);
             return res;
         }
 

@@ -6,16 +6,18 @@ import { ICommunicator } from "./ICommunicator";
 
 let comm: ICommunicator;
 
-document.getElementById("connectButton").addEventListener("click", function () {
-    let user = (<HTMLInputElement>document.getElementById("userName")).value;
-    comm = new Communicator(user);
-    comm.addResponder(user, onRequest);
-});
+
+let onConnect = function (response: IResponse) {
+    console.log(onConnect);
+    let msg = response.Content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let li = document.createElement("li");
+    li.textContent = msg;
+    document.getElementById("messagesList").appendChild(li);
+}
 
 //callback for receiving messages
 let onReceive = function (message: IMessage) {
-    console.log("onReceive called in site.ts");
-    console.log(message);
+    //console.log(message);
     let msg = message.Content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     let encodedMsg = msg + " under topic " + message.Topic;
     let li = document.createElement("li");
@@ -23,9 +25,7 @@ let onReceive = function (message: IMessage) {
     document.getElementById("messagesList").appendChild(li);
 }
 
-
-
-let onRequest = function (request: IRequest) : string {
+let onRequest = function (request: IRequest): string {
     console.log("Received request from");
     let encodedMsg = "Received request from " + request.Sender;
     let li = document.createElement("li");
@@ -33,6 +33,12 @@ let onRequest = function (request: IRequest) : string {
     document.getElementById("messagesList").appendChild(li);
     return request.Content;
 }
+
+document.getElementById("connectButton").addEventListener("click", function () {
+    let user = (<HTMLInputElement>document.getElementById("userName")).value;
+    comm = new Communicator(user, onConnect);
+    comm.addResponder(user, onRequest);
+});
 
 //Add user callback to responder map
 //move to constructor later?
@@ -113,11 +119,7 @@ document.getElementById("requestButton").addEventListener("click", function () {
 
 })
 
-
-
-// Client can stop the connection
-/*
-document.getElementById("stopConnectionButton").addEventListener("click", function () {
+document.getElementById("disconnectButton").addEventListener("click", function () {
     let result = comm.disconnectAsync();
     result.then((res) => {
         let li = document.createElement("li");
@@ -129,5 +131,3 @@ document.getElementById("stopConnectionButton").addEventListener("click", functi
         document.getElementById("messagesList").appendChild(li);
     });
 });
-
-*/

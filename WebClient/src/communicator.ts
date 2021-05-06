@@ -31,13 +31,8 @@ export class Communicator implements ICommunicator {
         this.connection.on(hubMethod, handler);
     }
 
-
-
-  
-
-  
     //initialize the connection and start it; throw an exception if connection fails
-    private establishConnection(url: string) {
+    private establishConnection(url: string, connectionHandler: (response: IResponse)=> any) {
 
         this.connection = new signalR.HubConnectionBuilder().withUrl(url).build();
 
@@ -56,6 +51,7 @@ export class Communicator implements ICommunicator {
             (resolve: IResponse): void => {
                 console.log(resolve);
                 if (resolve.Success === true) {
+                    connectionHandler(resolve);
                     console.log("successfully registered");//TODO: notify user?
                 } else {//duplicate user name, need to stop connection and throw
                     this.connection.stop();
@@ -67,8 +63,8 @@ export class Communicator implements ICommunicator {
         });
     }
 
-    constructor(user: string) {
-        this.establishConnection("https://localhost:5001/signalRhub");
+    constructor(user: string, connectCallback: (response: IResponse)=> any) {
+        this.establishConnection("https://localhost:5001/signalRhub", connectCallback);
 
         this.callbacksByTopics = new Map();
         this.callbacksByResponder = new Map();
@@ -84,7 +80,6 @@ export class Communicator implements ICommunicator {
             let topicCallback = this.callbacksByTopics.get(messageReceived.Topic);
             topicCallback(messageReceived);//invoke callback
         });
-
         
         this.registerCallback("OnQuery", (requestReceived: IRequest) => {
             console.log(requestReceived);
