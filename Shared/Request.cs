@@ -40,6 +40,15 @@ namespace SignalRCommunicator
 
         }
 
+        public Request(string responder, string content, string sender)
+            :this()
+        {
+            Responder = responder;
+            Content = content;
+            Sender = sender;
+            Timestamp = DateTime.Now;
+        }
+
         public Request(
             string responder,
             string correlationId,
