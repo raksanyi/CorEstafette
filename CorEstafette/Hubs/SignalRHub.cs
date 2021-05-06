@@ -99,6 +99,6 @@ namespace CorEstafette.Hubs
             ConnectedClients.TryRemove(userName, out _);
             return base.OnDisconnectedAsync(exception);
         }
-
     }
+
 }
