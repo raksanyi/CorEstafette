@@ -112,6 +112,7 @@ namespace CorEstafette.Hubs
         {
 
             responsesByCorrelationIds[response.CorrelationId].TrySetResult(response);
+         }
          
         public override Task OnDisconnectedAsync(System.Exception exception)
         {
