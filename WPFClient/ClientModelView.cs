@@ -96,9 +96,9 @@ namespace WPFClient
         public string LogMessages { get; set; }
         public string Messages { get; set; }
 
-        public Object OnQuery(IRequest request)
+        public Task<Object> OnQuery(IRequest request)
         {
-            return request;
+            return null;
         }
 
         public Task OnSubscribeAsync(string response)
