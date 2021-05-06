@@ -61,17 +61,45 @@ namespace WPFClient
                 Messages = response.Content + Environment.NewLine + Messages;
                 OnPropertyChanged(nameof(Messages));
             });
+
+            AddResponderCommand = new DelegateCommand(async () =>
+            {
+                var response = await communicator.AddResponder(Responder, OnQuery);
+                if( response == null )
+                {
+                    Messages = "Failed to add Responder to the list." + Environment.NewLine + Messages;
+                    OnPropertyChanged(nameof(Messages));
+                    return;
+                }
+                Messages = response.Content + Environment.NewLine + Messages;
+                OnPropertyChanged(nameof(Messages));
+            });
+
+            SendRequestCommand = new DelegateCommand(async () =>
+            {
+                await communicator.QueryAsync(Responder, AdditionalData);
+            });
+
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public string Topic { get; set; }
         public string Content { get; set; }
+        public string Responder { get; set; }
+        public string AdditionalData { get; set; }
         public ICommand PublishMessage { get; set; }
         public ICommand SubscribeCommand { get; set; }
         public ICommand UnsubscribeCommand { get; set; }
+        public ICommand AddResponderCommand { get; set; }
+        public ICommand SendRequestCommand { get; set; }
         public string Username { get; set; }
         public string LogMessages { get; set; }
         public string Messages { get; set; }
+
+        public Object OnQuery(IRequest request)
+        {
+            return request;
+        }
 
         public Task OnSubscribeAsync(string response)
         {

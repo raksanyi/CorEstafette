@@ -27,6 +27,7 @@ namespace SignalRCommunicator
         public Response()
         {
             CorrelationId = Guid.NewGuid().ToString();
+            Timestamp = DateTime.Now;
         }
         public Response( 
             bool success,

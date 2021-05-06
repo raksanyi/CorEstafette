@@ -9,12 +9,19 @@ namespace CorEstafette.Hubs
     public class SignalRHub : Hub
     {
         private static ConcurrentDictionary<string, string> UserConnections = new ConcurrentDictionary<string, string>();
+        private static ConcurrentDictionary<string, TaskCompletionSource<IResponse>> responsesByCorrelationId = new ConcurrentDictionary<string, TaskCompletionSource<IResponse>>();
 
         public async Task<IResponse> ConnectAsync(string userName)
         {
             var success = UserConnections.TryAdd(userName, Context.ConnectionId);
             string content = $"Username {userName} {(success ? "added successfully" : "already exists")} in the repertory.";
             return new Response(userName, null, content, true);
+        }
+
+        public IResponse VerifyUserRegistered(string userName)
+        {
+            bool success = UserConnections.ContainsKey(userName);
+            return new Response(null, $"{userName} is {(success ? "" : "not ")} in the repertory.", success);
         }
         public async Task PublishAsync(Message message)
         {
@@ -49,8 +56,32 @@ namespace CorEstafette.Hubs
                     userName = pair.Key;
             }
 
-            UserConnections.TryRemove(userName, out string connectId);
+            UserConnections.TryRemove(userName, out _);
             return base.OnDisconnectedAsync(exception);
         }
+
+        public async Task<IResponse> QueryAsync(Request request)
+        {
+            responsesByCorrelationId[request.CorrelationId] = new TaskCompletionSource<IResponse>();
+
+            await Clients.Client(UserConnections[request.Responder]).SendAsync("OnQuery", request);
+            var responseTask = responsesByCorrelationId[request.CorrelationId].Task;
+            var timeoutTask = Task.Delay(2000);
+            var result = await Task.WhenAny(responseTask, timeoutTask);
+
+            if(result == responseTask)
+            {
+                responsesByCorrelationId.TryRemove(request.CorrelationId, out var tcs);
+                return tcs.Task.Result;
+            }
+            return new Response(false, request.CorrelationId, null, "Timeout error, query failed", request.Sender, request.Timestamp);
+        }
+
+        public void ResponseQueryAsync(Response response)
+        {
+            responsesByCorrelationId[response.CorrelationId].TrySetResult(response);
+        }
+
+
     }
 }
