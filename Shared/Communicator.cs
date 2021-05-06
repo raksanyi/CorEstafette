@@ -117,6 +117,7 @@ namespace SignalRCommunicator
         public async Task<IResponse> QueryAsync(string responder, string additionalData)
         {
             IRequest request = new Request(responder, additionalData, UserId);
+            co
             IResponse response = await connection.InvokeAsync<Response>("QueryAsync", request);
             return response;
             
