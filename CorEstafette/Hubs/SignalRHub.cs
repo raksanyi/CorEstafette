@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Collections.Concurrent;
 
 
-
 //Hub manages connection, group, messaging
 namespace CorEstafette.Hubs
 {
@@ -114,6 +113,17 @@ namespace CorEstafette.Hubs
 
             responsesByCorrelationIds[response.CorrelationId].TrySetResult(response);
          
+        public override Task OnDisconnectedAsync(System.Exception exception)
+        {
+            string userName = "";
+            foreach( var pair in UserConnections)
+            {
+                if (pair.Value == Context.ConnectionId)
+                    userName = pair.Key;
+            }
+
+            UserConnections.TryRemove(userName, out string connectId);
+            return base.OnDisconnectedAsync(exception);
         }
     }
 }
