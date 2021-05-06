@@ -1,81 +1,30 @@
-﻿ using Microsoft.AspNetCore.SignalR;
-using System.Threading;
+﻿using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using SignalRCommunicator;
-using System.Collections.Generic;
 using System;
-using System.Diagnostics;
 using System.Collections.Concurrent;
-
 
 //Hub manages connection, group, messaging
 namespace CorEstafette.Hubs
 {
-
-    public class Request
-    {
-
-
-        public string CorrelationId { get; set; }
-        public string Content { get; set; }
-        public string Sender { get; set; }
-        public string Topic { get; set; }
-        public DateTime TimeStamp { get; set; }
-        public string Destination { get; set; }
-    }
-
-
-
     public class SignalRHub : Hub
     {
-
         static private ConcurrentDictionary<string, string> ConnectedClients = new ConcurrentDictionary<string, string>();
-    
         private static ConcurrentDictionary<string, TaskCompletionSource<IResponse>> responsesByCorrelationIds = new ConcurrentDictionary<string, TaskCompletionSource<IResponse>>();
 
-        //public override Task OnConnectedAsync()
-        //{
-        //    System.Threading.Thread.Sleep(4000);//test timeout
-        //    return base.OnConnectedAsync();
-        //}
-        private static ConcurrentDictionary<string, string> UserConnections = new ConcurrentDictionary<string, string>();
-        private static ConcurrentDictionary<string, TaskCompletionSource<IResponse>> responsesByCorrelationId = new ConcurrentDictionary<string, TaskCompletionSource<IResponse>>();
-
-        //cache the connection's name and id; return a success response if the connection is valid;
-        // return a failure response if the connection's name is already in used
         public async Task<IResponse> ConnectAsync(string userName)
         {
             bool success = ConnectedClients.TryAdd(userName, Context.ConnectionId);
-            foreach (var kvp in ConnectedClients) { Debug.WriteLine(kvp.Key + " " + kvp.Value); } //test
-            IResponse res = new Response("", userName +  " is connected to the service", true);
+            IResponse res = new Response("", $"{userName} {(success ? "successfully registered" : "failed to register")} to the service", success);
             return res;
         }
 
-        //remove the connection from the cache
-        public override Task OnDisconnectedAsync(Exception exception)
-        {
-            //var connName = Context.GetHttpContext().Request.Query["name"];
-            foreach (var kvp in ConnectedClients)
-            {
-                if (kvp.Value == Context.ConnectionId)
-                {
-                    string userName = kvp.Key;
-                    ConnectedClients.TryRemove(userName, out string connectId);
-                }
-            }
-            //test
-            Debug.WriteLine("print dict in onDisconnectedAsync");
-            foreach (var kvp in ConnectedClients) {Debug.WriteLine(kvp.Key + " " + kvp.Value);}
-            return base.OnDisconnectedAsync(exception);
-        }
-
-        //publish message to a particular topic
-
         public IResponse VerifyUserRegistered(string userName)
         {
-            bool success = UserConnections.ContainsKey(userName);
+            bool success = ConnectedClients.ContainsKey(userName);
             return new Response(null, $"{userName} is {(success ? "" : "not ")} in the repertory.", success);
         }
+        //publish message to a particular topic
         public async Task PublishAsync(Message message)
         {
             await Clients.OthersInGroup(message.Topic).SendAsync("OnPublish", message);
@@ -102,7 +51,7 @@ namespace CorEstafette.Hubs
         {
             responsesByCorrelationIds[request.CorrelationId] = new TaskCompletionSource<IResponse>();
 
-            await Clients.Client(ConnectedClients[request.Destination]).SendAsync("OnQuery", request);
+            await Clients.Client(ConnectedClients[request.Responder]).SendAsync("OnQuery", request);
             var responseTask = responsesByCorrelationIds[request.CorrelationId].Task;
             var timeoutTask = Task.Delay(2000);
             var result = await Task.WhenAny(responseTask, timeoutTask);
@@ -115,47 +64,23 @@ namespace CorEstafette.Hubs
             return new Response(false, request.CorrelationId, null, "Query failed after 2 second time out", request.Sender, DateTime.Now); 
         }
 
-
         public void RespondQueryAsync(Response response)
         {
-
             responsesByCorrelationIds[response.CorrelationId].TrySetResult(response);
-         
+        }
+                 
         public override Task OnDisconnectedAsync(System.Exception exception)
         {
             string userName = "";
-            foreach( var pair in UserConnections)
+            foreach( var pair in ConnectedClients)
             {
                 if (pair.Value == Context.ConnectionId)
                     userName = pair.Key;
             }
 
-            UserConnections.TryRemove(userName, out _);
+            ConnectedClients.TryRemove(userName, out _);
             return base.OnDisconnectedAsync(exception);
         }
-
-        public async Task<IResponse> QueryAsync(Request request)
-        {
-            responsesByCorrelationId[request.CorrelationId] = new TaskCompletionSource<IResponse>();
-
-            await Clients.Client(UserConnections[request.Responder]).SendAsync("OnQuery", request);
-            var responseTask = responsesByCorrelationId[request.CorrelationId].Task;
-            var timeoutTask = Task.Delay(2000);
-            var result = await Task.WhenAny(responseTask, timeoutTask);
-
-            if(result == responseTask)
-            {
-                responsesByCorrelationId.TryRemove(request.CorrelationId, out var tcs);
-                return tcs.Task.Result;
-            }
-            return new Response(false, request.CorrelationId, null, "Timeout error, query failed", request.Sender, request.Timestamp);
-        }
-
-        public void ResponseQueryAsync(Response response)
-        {
-            responsesByCorrelationId[response.CorrelationId].TrySetResult(response);
-        }
-
 
     }
 }
