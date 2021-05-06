@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace SignalRCommunicator
 {
     [Serializable]
-    public class Request : IRequest
+    class Request : IRequest
     {
         [JsonProperty]
         public string Responder { get; set; }
@@ -32,16 +32,8 @@ namespace SignalRCommunicator
         public Request()
         {
             CorrelationId = Guid.NewGuid().ToString();
-            Timestamp = DateTime.Now;
         }
 
-        public Request(string responder, string content, string sender)
-            : this()
-        {
-            Responder = responder;
-            Content = content;
-            Sender = sender;
-        }
         public Request(Message message, string responder)
             : this(responder, message.CorrelationId, message.Content, message.Sender, message.Timestamp)
         {
