@@ -31,8 +31,7 @@ namespace CorEstafette
             {
                 options.PayloadSerializerOptions.PropertyNamingPolicy = null;//configure signalR hubs
             });
-            services.AddSignalR().AddAzureSignalR("Endpoint = https://isabelletestsignalr.service.signalr.net;AccessKey=71cNhuXYx82+nQ79IkHCWTXtTpcqeSd7Lo/O5zYza8M=;Version=1.0;");//configure signalR
-        }
+         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -58,6 +57,14 @@ namespace CorEstafette
                     .WithMethods("GET", "POST")
                     .AllowCredentials();
             });
+
+            //app.UseCors(builder =>
+            //{
+            //    builder.WithOrigins("https://localhost:5003")
+            //        .AllowAnyHeader()
+            //        .WithMethods("GET", "POST")
+            //        .AllowCredentials();
+            //});
 
             app.UseRouting();
 

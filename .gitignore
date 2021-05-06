@@ -37,3 +37,17 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+/WebClient/wwwroot/js/site.js.map
+/WebClient/wwwroot/js/site.js
+/WebClient/wwwroot/js/Response.js.map
+/WebClient/wwwroot/js/Response.js
+/WebClient/wwwroot/js/Message.js.map
+/WebClient/wwwroot/js/Message.js
+/WebClient/wwwroot/js/IResponse.js.map
+/WebClient/wwwroot/js/IResponse.js
+/WebClient/wwwroot/js/IMessage.js.map
+/WebClient/wwwroot/js/IMessage.js
+/WebClient/wwwroot/js/ICommunicator.js.map
+/WebClient/wwwroot/js/ICommunicator.js
+/WebClient/wwwroot/js/communicator.js.map
+/WebClient/wwwroot/js/communicator.js
