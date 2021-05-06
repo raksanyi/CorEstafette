@@ -9,8 +9,10 @@ namespace CorEstafette.Hubs
 {
     public class SignalRHub : Hub
     {
-        static private ConcurrentDictionary<string, string> ConnectedClients = new ConcurrentDictionary<string, string>();
+        private static ConcurrentDictionary<string, string> ConnectedClients = new ConcurrentDictionary<string, string>();
         private static ConcurrentDictionary<string, TaskCompletionSource<IResponse>> responsesByCorrelationIds = new ConcurrentDictionary<string, TaskCompletionSource<IResponse>>();
+        private static ConcurrentDictionary<string, string> RespondersList = new ConcurrentDictionary<string, string>();
+
 
         public async Task<IResponse> ConnectAsync(string userName)
         {
@@ -22,7 +24,23 @@ namespace CorEstafette.Hubs
         public IResponse VerifyUserRegistered(string userName)
         {
             bool success = ConnectedClients.ContainsKey(userName);
-            return new Response(null, $"{userName} is {(success ? "" : "not ")} in the repertory.", success);
+            if (success)
+            {
+                success = RespondersList.TryAdd(userName, Context.ConnectionId);
+                return new Response(null, $"{userName} was {(success ? "successfully" : "failed to be")} added to the Responser's list", success);
+            }
+            RespondersList.TryRemove(userName, out var _);
+            return new Response(null, $"{userName} is not registered on the service.", success);
+        }
+
+        public IResponse VerifyUserInResponserList(string userName)
+        {
+            bool success = RespondersList.ContainsKey(userName);
+            // Check if still connected
+            if (success)
+                return VerifyUserRegistered(userName);
+
+            return new Response(null, $"{userName} is not in the responder's list.", success);
         }
         //publish message to a particular topic
         public async Task PublishAsync(Message message)
