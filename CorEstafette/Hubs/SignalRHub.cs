@@ -21,24 +21,24 @@ namespace CorEstafette.Hubs
             return res;
         }
 
-        public IResponse VerifyUserRegistered(string userName)
+        public IResponse VerifyResponderIsRegistered(string userName)
         {
             bool success = ConnectedClients.ContainsKey(userName);
             if (success)
             {
                 success = RespondersList.TryAdd(userName, Context.ConnectionId);
-                return new Response(null, $"{userName} was {(success ? "successfully added to" : "already in")} the Responser's list", success);
+                return new Response(null, $"{userName} was {(success ? "successfully added to" : "already in")} the Responser's list", true);
             }
             RespondersList.TryRemove(userName, out var _);
             return new Response(null, $"{userName} is not registered on the service.", success);
         }
 
-        public IResponse VerifyUserInResponserList(string userName)
+        public IResponse VerifyResponderIsInList(string userName)
         {
             bool success = RespondersList.ContainsKey(userName);
             // Check if still connected
             if (success)
-                return VerifyUserRegistered(userName);
+                return VerifyResponderIsRegistered(userName);
 
             return new Response(null, $"{userName} is not in the responder's list.", success);
         }
