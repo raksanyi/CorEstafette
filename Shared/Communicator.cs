@@ -97,7 +97,7 @@ namespace SignalRCommunicator
 
         public async Task<IResponse> AddResponder(string responder, Func<IRequest, Task<Object>> callBack)
         {
-            Response response = await connection.InvokeAsync<Response>("VerifyResponderIsRegistered", responder);
+            Response response = await connection.InvokeAsync<Response>("AddResponder", responder);
             if (!response.Success)
             {
                 callBackByResponder.Remove(responder);
@@ -110,7 +110,7 @@ namespace SignalRCommunicator
         public async Task<IResponse> QueryAsync(string responder, string additionalData)
         {
             IRequest request = new Request(responder, additionalData, UserId);
-            IResponse response = await connection.InvokeAsync<Response>("VerifyResponderIsRegistered", responder);
+            IResponse response = await connection.InvokeAsync<Response>("VerifyResponderIsInList", responder);
             if (!response.Success)
                 return response;
             response = await connection.InvokeAsync<Response>("QueryAsync", request);
