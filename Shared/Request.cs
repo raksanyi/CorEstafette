@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace SignalRCommunicator
 {
     [Serializable]
-    class Request : IRequest
+    public class Request : IRequest
     {
         [JsonProperty]
         public string Responder { get; set; }

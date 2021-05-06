@@ -27,7 +27,7 @@ namespace CorEstafette.Hubs
             if (success)
             {
                 success = RespondersList.TryAdd(userName, Context.ConnectionId);
-                return new Response(null, $"{userName} was {(success ? "successfully" : "failed to be")} added to the Responser's list", success);
+                return new Response(null, $"{userName} was {(success ? "successfully added to" : "already in")} the Responser's list", success);
             }
             RespondersList.TryRemove(userName, out var _);
             return new Response(null, $"{userName} is not registered on the service.", success);
