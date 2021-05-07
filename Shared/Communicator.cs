@@ -45,10 +45,9 @@ namespace SignalRCommunicator
         {
             var tmp = await callBackByResponder[request.Responder](request);
 
-            IResponse response = new Response(true, request.CorrelationId, null, "Well Hello " + request.Sender, request.Sender, request.Timestamp);
-            var result = await connection.InvokeAsync<Response>("RespondQueryAsync", response);
-            //var tmp = callBackByResponder[request.Responder];
-            return null;
+            IResponse response = new Response(true, request.CorrelationId, null, tmp.ToString(), request.Sender, request.Timestamp);
+            await connection.InvokeAsync<Response>("RespondQueryAsync", response);
+            return Task.FromResult(response);
 
         }
 
@@ -114,10 +113,10 @@ namespace SignalRCommunicator
         public async Task<IResponse> QueryAsync(string responder, string additionalData)
         {
             IRequest request = new Request(responder, additionalData, UserId);
-            IResponse response = await connection.InvokeAsync<Response>("VerifyResponderIsInList", responder);
-            if (!response.Success)
-                return response;
-            response = await connection.InvokeAsync<Response>("QueryAsync", request);
+            //IResponse response = await connection.InvokeAsync<Response>("VerifyResponderIsInList", responder);
+            /*if (!response.Success)
+                return response;*/
+            IResponse response = await connection.InvokeAsync<Response>("QueryAsync", request);
             return response;
             //return callBackByResponder.TryAdd(responder, callBack);
         }
