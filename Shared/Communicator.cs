@@ -56,7 +56,7 @@ namespace SignalRCommunicator
                 return;
             }
             Debug.WriteLine($"{nameof(OnQuery)}: got the results from the client, {clientResultTask.Result}.");
-            await connection.InvokeAsync<Response>("RespondQueryAsync", new Response(true, request.CorrelationId, null, clientResultTask.Result.ToString(), request.Sender, request.Timestamp));
+            await connection.InvokeAsync("RespondQueryAsync", new Response(true, request.CorrelationId, null, clientResultTask.Result.ToString(), request.Sender, request.Timestamp));
         }
 
         public async Task<IResponse> SubscribeAsync(string topic, Func<string, Task> callBack)
