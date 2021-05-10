@@ -41,14 +41,22 @@ namespace SignalRCommunicator
             await callBackTopics[message.Topic]($"{message.Sender} published : {message.Content} on topic {message.Topic}");
         }
 
-        private async Task<Object> OnQuery(IRequest request)
+        private async Task OnQuery(IRequest request)
         {
-            var tmp = await callBackByResponder[request.Responder](request);
+            Debug.WriteLine($"{nameof(OnQuery)}: correlation id: {request.CorrelationId}");
+            Debug.WriteLine($"{nameof(OnQuery)}: called with {request.Content}.");
+            var clientResultTask = callBackByResponder[request.Responder](request);
+            var timeoutTask = Task.Delay(1000);
+            var resultTask = await Task.WhenAny(clientResultTask, timeoutTask);
 
-            IResponse response = new Response(true, request.CorrelationId, null, tmp.ToString(), request.Sender, request.Timestamp);
-            await connection.InvokeAsync<Response>("RespondQueryAsync", response);
-            return Task.FromResult(response);
-
+            if(resultTask == timeoutTask)
+            {
+                Debug.WriteLine($"{nameof(OnQuery)}: timed out after 5 seconds.");
+                await connection.InvokeAsync("RespondQueryAsync", new Response(UserId, "topic", "OnQuery on Communicator timed out.", false));
+                return;
+            }
+            Debug.WriteLine($"{nameof(OnQuery)}: got the results from the client, {clientResultTask.Result}.");
+            await connection.InvokeAsync<Response>("RespondQueryAsync", new Response(true, request.CorrelationId, null, clientResultTask.Result.ToString(), request.Sender, request.Timestamp));
         }
 
         public async Task<IResponse> SubscribeAsync(string topic, Func<string, Task> callBack)
@@ -58,7 +66,7 @@ namespace SignalRCommunicator
             
             IMessage message = new Message(topic, null, UserId);
             Task<Response> subscribeTask = connection.InvokeAsync<Response>("SubscribeTopicAsync", message);
-            var timeOutTask = Task.Delay(2000);
+            var timeOutTask = Task.Delay(5000);
             var completed = await Task.WhenAny(subscribeTask, timeOutTask);
 
             if (completed != subscribeTask)
@@ -79,7 +87,7 @@ namespace SignalRCommunicator
 
             IMessage message = new Message(topic, null, UserId);
             Task<Response> unsubscribeTask = connection.InvokeAsync<Response>("UnsubscribeTopicAsync", message);
-            var timeOutTask = Task.Delay(2000);
+            var timeOutTask = Task.Delay(5000);
             
             var completed = await Task.WhenAny(unsubscribeTask, timeOutTask);
 
@@ -103,7 +111,10 @@ namespace SignalRCommunicator
             Response response = await connection.InvokeAsync<Response>("AddResponder", responder);
             if (!response.Success)
             {
-                callBackByResponder.Remove(responder);
+                if (callBackByResponder.ContainsKey(responder))
+                {
+                    callBackByResponder.Remove(responder);
+                }
                 return response;
             }
             bool success = callBackByResponder.TryAdd(responder, callBack);
@@ -112,12 +123,24 @@ namespace SignalRCommunicator
 
         public async Task<IResponse> QueryAsync(string responder, string additionalData)
         {
+            Debug.WriteLine($"{nameof(QueryAsync)}: called with responder {responder} and additional data {additionalData}.");
             IRequest request = new Request(responder, additionalData, UserId);
             //IResponse response = await connection.InvokeAsync<Response>("VerifyResponderIsInList", responder);
             /*if (!response.Success)
                 return response;*/
-            IResponse response = await connection.InvokeAsync<Response>("QueryAsync", request);
-            return response;
+            Debug.WriteLine($"{nameof(QueryAsync)}: correlation id: {request.CorrelationId}");
+            var queryTask = connection.InvokeAsync<Response>("QueryAsync", request);
+            var timeoutTask = Task.Delay(5000);
+            var resultTask = await Task.WhenAny(queryTask, timeoutTask);
+
+            if(resultTask == queryTask)
+            {
+                Debug.WriteLine($"{nameof(QueryAsync)}: got the result, {queryTask.Result.Content}.");
+                return queryTask.Result;
+            }
+
+            Debug.WriteLine($"{nameof(QueryAsync)}: timed out.");
+            return new Response("sender", "topic", "QueryAsync on Communicator timed out.", false);
             //return callBackByResponder.TryAdd(responder, callBack);
         }
     }

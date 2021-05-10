@@ -6,6 +6,7 @@ using Prism.Commands;
 using System.Threading.Tasks;
 using SignalRCommunicator;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace WPFClient
 {
@@ -104,11 +105,12 @@ namespace WPFClient
         public string LogMessages { get; set; }
         public string Messages { get; set; }
 
-        public Task<Object> OnQuery(IRequest request)
+        public Task<object> OnQuery(IRequest request)
         {
-            
+            Debug.WriteLine($"{nameof(OnQuery)}: got called on the ClientModeLView with {request.Content}.");
             //Object rep = new Response(request.Sender, null, $"Hello {request.Sender}, {request.Responder} successfully received your request", true);
-            Object rep = $"Hello {request.Sender}, {request.Responder} successfully received your request";
+            object rep = $"Hello {request.Sender}, {request.Responder} successfully received your request";
+            Debug.WriteLine($"{nameof(OnQuery)}: on the ClientModelView returning {rep}.");
             return Task.FromResult(rep);
         }
 
